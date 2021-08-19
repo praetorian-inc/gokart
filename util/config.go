@@ -16,13 +16,12 @@ package util
 
 import (
 	_ "embed"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
+	"sync"
 
 	"gopkg.in/yaml.v3"
 )
@@ -36,6 +35,26 @@ type ConfigType struct {
 	YMLPath     string
 }
 
+// ConfigFile stores the values parsed from the configuration file
+type ConfigFile struct {
+	Analyzers map[string]Analyzer `yaml:"analyzers"`
+	Sources   Sources             `yaml:"sources"`
+}
+
+// Analyzer stores an analyzer parsed from the configuration file
+type Analyzer struct {
+	Doc       string              `yaml:"doc"`
+	Message   string              `yaml:"message"`
+	VulnCalls map[string][]string `yaml:"vuln_calls"`
+}
+
+// Sources stores the untrusted sources parsed from the configuration file
+type Sources struct {
+	Variables map[string][]string `yaml:"variables"`
+	Functions map[string][]string `yaml:"functions"`
+	Types     map[string][]string `yaml:"types"`
+}
+
 var (
 	FilesFound      = 0
 	VulnGlobalVars  map[string][]string
@@ -45,115 +64,95 @@ var (
 	DefaultAnalyzersContent []byte
 )
 
-var Config ConfigType
+var (
+	configDir string
+	once      sync.Once
+)
 
-func LoadVulnerableSources() {
-	// Load YAML
-	yamlPath := Config.YMLPath
-	// If not found in the working directory, use the one in the executable's directory
-	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
-		execPath, err := os.Executable()
-		if err != nil {
-			log.Fatal(err)
-		}
-		yamlPath = path.Join(path.Dir(execPath), yamlPath)
-	}
-	yfile, err := ioutil.ReadFile(yamlPath)
+var (
+	Config     ConfigType
+	ScanConfig ConfigFile
+)
+
+func LoadScanConfig() {
+	configBytes, err := ioutil.ReadFile(Config.YMLPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	data := make(map[interface{}]map[interface{}]map[interface{}]interface{})
-	err = yaml.Unmarshal(yfile, &data)
-	if err != nil {
+	if err := yaml.Unmarshal(configBytes, &ScanConfig); err != nil {
 		log.Fatal(err)
 	}
 
-	skeys := data["sources"]
 	if Config.Debug {
-		log.Println("Beginning list of sources defined in yml:")
-	}
-	for _, sdict := range skeys {
-		for stype, sTypeDict := range sdict {
-			callsmap := sTypeDict.(map[string]interface{})
-			vulnmap := make(map[string][]string)
+		log.Println("Beginning list of default sources defined in yml:")
+		for pkg, fn := range ScanConfig.Sources.Functions {
+			log.Printf("Functions %s in package %s\n", fn, pkg)
+		}
 
-			for package_name, package_vuln_funcs := range callsmap {
-				// Initialize an empty array if the map key does not exist
-				if _, ok := vulnmap[package_name]; !ok {
-					var empty_array []string
-					vulnmap[package_name] = empty_array
+		if len(ScanConfig.Analyzers) > 0 {
+			log.Println("\nBeginning list of analyzers defined in yml:")
+			for name, values := range ScanConfig.Analyzers {
+				log.Printf("Name:    %s\n", name)
+				log.Printf("Doc:     %s\n", values.Doc)
+				log.Printf("Message: %s\n", values.Message)
+				log.Println("Vuln Calls:")
+				for pkg, fn := range values.VulnCalls {
+					log.Printf("Functions %s in package %s\n", fn, pkg)
 				}
-				package_vuln_funcs_arr := package_vuln_funcs.([]interface{})
-				for i, val := range package_vuln_funcs_arr {
-					if Config.Debug {
-						log.Println("Function", package_vuln_funcs_arr[i], "in package", package_name)
-					}
-					vulnmap[package_name] = append(vulnmap[package_name], val.(string))
-				}
-			}
-
-			// Set the map of vulnerable sources of this type
-			if stype == "variables" {
-				VulnGlobalVars = vulnmap
-			} else if stype == "functions" {
-				VulnGlobalFuncs = vulnmap
-			} else if stype == "types" {
-				VulnTypes = vulnmap
-
 			}
 		}
+		log.Printf("\n\n")
 	}
-	if Config.Debug {
-		log.Println("List of sources complete")
-	}
+	VulnGlobalVars = ScanConfig.Sources.Variables
+	VulnGlobalFuncs = ScanConfig.Sources.Functions
+	VulnTypes = ScanConfig.Sources.Types
 }
 
 // InitConfig() parses the flags and sets the corresponding Config variables
 func InitConfig(globals bool, sarif bool, verbose bool, debug bool, yml string) {
-
-	flag.Parse()
-
-	// If the YAML path provided is a relative path, convert it to absolute
-	if yml != "" && !filepath.IsAbs(yml) {
-		yml, _ = filepath.Abs(yml)
+	if yml == "" {
+		yml = getDefaultConfigPath()
+	} else if _, err := os.Stat(yml); err != nil {
+		log.Fatalf("failed to find the provided config file at %s: %v", yml, err)
 	}
-
-	// If the YAML path provided is empty or doesn't exist, then load from the default of ~/.gokart/analyzers.yml
-	if _, err := os.Stat(yml); os.IsNotExist(err) {
-		if yml != "" {
-			fmt.Printf("Custom analyzers config file not found at %q. ", yml)
-		}
-		fmt.Println("Using default analyzers config found at \"~/.gokart/analyzers.yml\".")
-
-		// Load YAML
-		config_path := os.ExpandEnv("$HOME/.gokart")
-		yaml_path := path.Join(config_path, "analyzers.yml")
-		yml = yaml_path
-
-		// Create our config directory if it doesn't already exist
-		if _, err := os.Stat(config_path); os.IsNotExist(err) {
-			err = os.Mkdir(config_path, 0744)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		// If not found in the working directory, use the one in the executable's directory
-		if _, err := os.Stat(yaml_path); os.IsNotExist(err) {
-			// default_analyzers_content is populated using the go:embed directive above
-			err := ioutil.WriteFile(yaml_path, DefaultAnalyzersContent, 0744)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("No existing analyzers.yml file found - writing default to ~/.gokart/analyzers.yml")
-		}
-	}
+	fmt.Printf("Using config found at %s\n", yml)
 
 	Config.GlobalsSafe = !globals
 	Config.OutputSarif = sarif
 	Config.Debug = debug
 	Config.Verbose = verbose
 	Config.YMLPath = yml
-	LoadVulnerableSources()
+	LoadScanConfig()
+}
+
+// getDefaultConfigPath gets the path to the default configuration file and creates it if it doesn't yet exist.
+func getDefaultConfigPath() string {
+	setConfigDir()
+	yamlPath := filepath.Join(configDir, "analyzers.yml")
+
+	// If ~/.gokart/analyzers.yml doesn't exist, create it with the default config
+	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+		fmt.Printf("Initializing default config at %s\n", yamlPath)
+		if err := ioutil.WriteFile(yamlPath, DefaultAnalyzersContent, 0o744); err != nil {
+			log.Fatalf("failed to write default config to %s: %v", yamlPath, err)
+		}
+	} else if err != nil {
+		// If the error returned by os.Stat is not ErrNotExist
+		log.Fatalf("failed to initialize default config: %v", err)
+	}
+	return yamlPath
+}
+
+// setConfigDir initializes the configDir variable upon its first invocation, does nothing otherwise.
+func setConfigDir() {
+	once.Do(func() {
+		userHomeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Fatalf("failed to get home directory: %v", err)
+		}
+		configDir = filepath.Join(userHomeDir, ".gokart")
+		if err = os.MkdirAll(configDir, 0o744); err != nil {
+			log.Fatalf("failed to create config directory %s: %v", configDir, err)
+		}
+	})
 }
