@@ -20,7 +20,6 @@ package analyzers
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,7 +38,15 @@ var Analyzers = []*analysis.Analyzer{
 	SSRFAnalyzer,
 }
 
-func Scan(args []string) {
+type errPotentialVulnerabilities struct{}
+
+func (errPotentialVulnerabilities) Error() string {
+	return ""
+}
+
+var ErrPotentialVulnerabilities = errPotentialVulnerabilities{}
+
+func Scan(args []string) error {
 	if util.Config.OutputSarif {
 		util.InitSarifReporting()
 	} else {
@@ -60,7 +67,7 @@ func Scan(args []string) {
 		// Fix up the path to make sure it is pointed at a directory (even if given a file)
 		fileInfo, err := os.Stat(strings.TrimRight(target_path, "..."))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		target_dir := filepath.Dir(target_path)
 		if fileInfo.IsDir() {
@@ -78,7 +85,7 @@ func Scan(args []string) {
 
 		err = os.Chdir(strings.TrimRight(target_path, "..."))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		cwd, _ := os.Getwd()
 		if util.Config.Debug {
@@ -94,7 +101,7 @@ func Scan(args []string) {
 	// Run analyzers
 	results, success, err := run.Run(Analyzers, args...)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// Calculate time taken
 	scan_time := time.Since(run_begin_time)
@@ -137,4 +144,10 @@ func Scan(args []string) {
 		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
 		fmt.Printf("GoKart found %d potentially vulnerable functions\n", count)
 	}
+
+	if count == 0 {
+		return nil
+	}
+
+	return ErrPotentialVulnerabilities
 }

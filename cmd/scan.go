@@ -18,6 +18,10 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
+	"errors"
+	"log"
+	"os"
+
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
@@ -31,6 +35,7 @@ func init() {
 	scanCmd.Flags().BoolP("globalsTainted", "g", false, "marks global variables as dangerous")
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
+	scanCmd.Flags().BoolP("exitCode", "x", false, "return non-nil exit code on potential vulnerabilities")
 	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
 	goKartCmd.MarkFlagRequired("scan")
 }
@@ -49,7 +54,15 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
+		exitCode, _ := cmd.Flags().GetBool("exitCode")
 		util.InitConfig(globals, sarif, verbose, debug, yml)
-		analyzers.Scan(args)
+
+		err := analyzers.Scan(args)
+		if exitCode && errors.Is(err, analyzers.ErrPotentialVulnerabilities) {
+			os.Exit(1)
+		}
+		if err != nil && !errors.Is(err, analyzers.ErrPotentialVulnerabilities) {
+			log.Fatal(err)
+		}
 	},
 }
