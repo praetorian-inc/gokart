@@ -53,6 +53,8 @@ type Sources struct {
 	Variables map[string][]string `yaml:"variables"`
 	Functions map[string][]string `yaml:"functions"`
 	Types     map[string][]string `yaml:"types"`
+	// For compatibility with older analyzer.yml format
+	OldSrcs *Sources `yaml:"sources"`
 }
 
 var (
@@ -81,6 +83,15 @@ func LoadScanConfig() {
 	}
 	if err := yaml.Unmarshal(configBytes, &ScanConfig); err != nil {
 		log.Fatal(err)
+	}
+
+	// If OldSrcs isn't nil, then the config file is in the old format and we unnest the values
+	if ScanConfig.Sources.OldSrcs != nil {
+		ScanConfig.Sources.Functions = ScanConfig.Sources.OldSrcs.Functions
+		ScanConfig.Sources.Variables = ScanConfig.Sources.OldSrcs.Variables
+		ScanConfig.Sources.Types = ScanConfig.Sources.OldSrcs.Types
+		// Set OldSrcs to nil to let the garbage collector clean it up
+		ScanConfig.Sources.OldSrcs = nil
 	}
 
 	if Config.Debug {
