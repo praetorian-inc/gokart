@@ -50,8 +50,11 @@ func StripArguments(parentFunction string) string {
 
 // prints out a finding; returns true if the finding was valid and false if the finding had the same source and sink
 func OutputFinding(finding Finding) bool {
-	// if the source and sink are the same, return false and do not print out the finding
+	if len(finding.Untrusted_Source) == 0 {
+		return false
+	}
 	if finding.Vulnerable_Function.SourceCode == finding.Untrusted_Source[0].SourceCode {
+		// if the source and sink are the same, return false and do not print out the finding
 		return false
 	}
 	if Config.OutputSarif {
