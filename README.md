@@ -28,7 +28,9 @@ significantly lower false positive rates than existing tools? Based on our exper
 the answer is yes. By leveraging source-to-sink tracing and SSA, GoKart is capable
 of tracking variable taint between variable assignments, significantly improving the 
 accuracy of findings. Our focus is on usability: pragmatically, that means we 
-have optimized our approaches to reduce false alarms. 
+have optimized our approaches to reduce false alarms.
+
+For more information, please read [our blog post](https://www.praetorian.com/blog/introducing-gokart/).
 
 ## Install
 
