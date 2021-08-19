@@ -15,13 +15,9 @@
 package analyzers
 
 import (
-	"io/ioutil"
-	"log"
-
 	"github.com/praetorian-inc/gokart/util"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
-	"gopkg.in/yaml.v3"
 )
 
 // Creates generic taint analyzer based on Sources and Sinks defined in analyzers.yaml file
@@ -66,53 +62,20 @@ func genericFunctionRun(pass *analysis.Pass, vulnPathFuncs map[string][]string,
 // LoadGenericAnalyzers creates generic taint anlalyzers from custom Sources and Sinks defined in analyzers.yaml
 // converts all variables to SSA form to construct a call graph and performs
 // recursive taint analysis to search for input sources of user-controllable data
+func LoadGenericAnalyzers() []*analysis.Analyzer {
+	var analyzers []*analysis.Analyzer
 
-func LoadGenericAnalyzers(yaml_path string) []*analysis.Analyzer {
-	yfile, err := ioutil.ReadFile(yaml_path)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	data := make(map[interface{}]map[interface{}]map[interface{}]interface{})
-	err = yaml.Unmarshal(yfile, &data)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Load analyzers from the interface
-	analyzers := []*analysis.Analyzer{}
-	m := data["analyzers"]
-	for analyzerName, analyzerDict := range m {
-		// Get the vulnerability message
-		message := ""
-		if analyzerDict["message"] != nil {
-			message = analyzerDict["message"].(string)
-		}
-
-		// Load the map of vulnerable functions
-		vulnCalls := make(map[string][]string)
-		yamlCallsMap := analyzerDict["vuln_calls"].(map[string]interface{})
-		for pkgName, packageVulnFuncs := range yamlCallsMap {
-			var newList []string
-			vulnCalls[pkgName] = newList
-			packageVulnFuncsList := packageVulnFuncs.([]interface{})
-			for _, val := range packageVulnFuncsList {
-				vulnCalls[pkgName] = append(vulnCalls[pkgName], val.(string))
-			}
-		}
-
-		// Wrap generic_function_run with a function that the analyze package can use
+	for analyzerName, analyzerDict := range util.ScanConfig.Analyzers {
 		analyzerFunc := func(pass *analysis.Pass) (interface{}, error) {
-			return genericFunctionRun(pass, vulnCalls, analyzerName.(string), message)
+			return genericFunctionRun(pass, analyzerDict.VulnCalls, analyzerName, analyzerDict.Message)
 		}
-
-		// Form the analyzer object and append to the analyzer list
-		analysisRun := new(analysis.Analyzer)
-		analysisRun.Name = "path_traversal"
-		analysisRun.Doc = analyzerDict["doc"].(string)
-		analysisRun.Run = analyzerFunc
-		analysisRun.Requires = []*analysis.Analyzer{buildssa.Analyzer}
-		analyzers = append(analyzers, analysisRun)
+		analysisRun := analysis.Analyzer{
+			Name:     analyzerName,
+			Doc:      analyzerDict.Doc,
+			Run:      analyzerFunc,
+			Requires: []*analysis.Analyzer{buildssa.Analyzer},
+		}
+		analyzers = append(analyzers, &analysisRun)
 	}
 
 	return analyzers

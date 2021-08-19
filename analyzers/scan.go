@@ -58,7 +58,7 @@ func Scan(args []string) {
 		}
 
 		// Fix up the path to make sure it is pointed at a directory (even if given a file)
-		fileInfo, err := os.Stat(strings.TrimRight(target_path, "..."))
+		fileInfo, err := os.Stat(strings.TrimRight(target_path, "."))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -76,7 +76,7 @@ func Scan(args []string) {
 			}
 		}
 
-		err = os.Chdir(strings.TrimRight(target_path, "..."))
+		err = os.Chdir(strings.TrimRight(target_path, "."))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -86,7 +86,7 @@ func Scan(args []string) {
 		}
 	}
 
-	generic_analyzers := LoadGenericAnalyzers(util.Config.YMLPath)
+	generic_analyzers := LoadGenericAnalyzers()
 	Analyzers = append(Analyzers, generic_analyzers[:]...)
 
 	// Begin timer
