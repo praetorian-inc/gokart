@@ -21,12 +21,12 @@ import (
 )
 
 // PathTraversalAnalyzer constructs Sinks from a set of functions known to be vulnerable to path injection
-// all variables are converted to SSA form and a call graph is contructed
+// all variables are converted to SSA form and a call graph is constructed
 // recursive taint analysis is then used to search from a given Sink up the callgraph for Sources of user-controllable data
 var PathTraversalAnalyzer = &analysis.Analyzer{
 	Name:     "path_traversal",
 	Doc:      "reports when path traversal can occur",
-	Run:      traveralRun,
+	Run:      traversalRun,
 	Requires: []*analysis.Analyzer{buildssa.Analyzer},
 }
 
@@ -38,8 +38,8 @@ func getVulnInjectionFunctions() map[string][]string {
 	}
 }
 
-// traveralRun runs the path traversal analyzer
-func traveralRun(pass *analysis.Pass) (interface{}, error) {
+// traversalRun runs the path traversal analyzer
+func traversalRun(pass *analysis.Pass) (interface{}, error) {
 
 	results := []util.Finding{}
 	// Builds SSA model of Go code
@@ -65,7 +65,7 @@ func traveralRun(pass *analysis.Pass) (interface{}, error) {
 			// Construct full name of function
 			curFunc := pkg + "." + fn
 
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range cg[curFunc] {
 
 				// Check if argument of vulnerable function is tainted by possibly user-controlled input

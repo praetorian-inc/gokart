@@ -23,7 +23,7 @@ import (
 )
 
 // SQLInjectionAnalyzer constructs Sinks from a set of functions known to be vulnerable to SQL injection
-// all variables are converted to SSA form and a call graph is contructed
+// all variables are converted to SSA form and a call graph is constructed
 // recursive taint analysis is then used to search from a given Sink up the callgraph for Sources of user-controllable data
 var SQLInjectionAnalyzer = &analysis.Analyzer{
 	Name:     "sql_injection",
@@ -71,7 +71,7 @@ func sqlRun(pass *analysis.Pass) (interface{}, error) {
 				argIndex = 2
 			}
 
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range cg[current_function] {
 
 				// Check if argument of vulnerable function is tainted by possibly user-controlled input

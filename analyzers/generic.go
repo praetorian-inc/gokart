@@ -42,7 +42,7 @@ func genericFunctionRun(pass *analysis.Pass, vulnPathFuncs map[string][]string,
 		for _, fn := range funcs {
 			// Construct full name of function
 			currentFunc := pkg + "." + fn
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range cg[currentFunc] {
 				// Check if argument of vulnerable function is tainted by possibly user-controlled input
 				taintAnalyzer := util.CreateTaintAnalyzer(pass, vulnFunc.Fn.Pos())
@@ -59,7 +59,7 @@ func genericFunctionRun(pass *analysis.Pass, vulnPathFuncs map[string][]string,
 	return results, nil
 }
 
-// LoadGenericAnalyzers creates generic taint anlalyzers from custom Sources and Sinks defined in analyzers.yaml
+// LoadGenericAnalyzers creates generic taint analyzers from custom Sources and Sinks defined in analyzers.yaml
 // converts all variables to SSA form to construct a call graph and performs
 // recursive taint analysis to search for input sources of user-controllable data
 func LoadGenericAnalyzers() []*analysis.Analyzer {

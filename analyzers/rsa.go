@@ -28,7 +28,7 @@ import (
 
 // RSAKeyLenAnalyzer is used to resolve constant values used for RSA key generation in order to more accurately
 // detect use of an insecure RSA key length constructed
-// all variables are converted to SSA form and a call graph is contructed
+// all variables are converted to SSA form and a call graph is constructed
 // recursive analysis is then used to resolve variables used as a key length to a final constant value at the callsite
 var RsaKeylenAnalyzer = &analysis.Analyzer{
 	Name:     "rsa_keylen",
@@ -168,7 +168,7 @@ func rsaRun(pass *analysis.Pass) (interface{}, error) {
 			// Construct full name of function
 			current_function := pkg + "." + fn
 
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range call_graph[current_function] {
 
 				// Check if argument of vulnerable function has keylen that is less than RECOMMENDED_KEYLEN

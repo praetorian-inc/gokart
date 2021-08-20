@@ -143,7 +143,7 @@ func ssrfRun(pass *analysis.Pass) (interface{}, error) {
 
 			// Construct full name of function
 			curFunc := pkg + "." + fn
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range cg[curFunc] {
 				// Check if argument of vulnerable function is tainted by possibly user-controlled input
 				taintAnalyzer := util.CreateTaintAnalyzer(pass, vulnFunc.Fn.Pos())

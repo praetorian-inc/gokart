@@ -65,7 +65,7 @@ func cmdInjectionRun(pass *analysis.Pass) (interface{}, error) {
 			// Construct full name of function
 			current_function := pkg + "." + fn
 
-			// Iterate over occurences of vulnerable function in call graph
+			// Iterate over occurrences of vulnerable function in call graph
 			for _, vulnFunc := range call_graph[current_function] {
 
 				// Check if argument of vulnerable function is tainted by possibly user-controlled input
