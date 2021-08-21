@@ -18,13 +18,13 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
+	"os"
+	"fmt"
+
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
-	"github.com/go-git/go-git/v5"
-	"fmt"
-	"strings"
-	"os"
+
 )
 
 var yml string
@@ -52,37 +52,29 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
 		util.InitConfig(globals, sarif, verbose, debug, yml)
+		
+		// If gomodname flag is set to a non-empty value then clone the repo and scan it
 		if len(gomodname) != 0 {
-			fmt.Printf("Loading remote go module: %s\n", gomodname)
-			modSlice := strings.Split(gomodname, "/")
-			if len(modSlice) <= 1 {
-				fmt.Printf("Invalid remote module name!\n")
-				os.Exit(1)
-			}
-			dirName := modSlice[len(modSlice)-1:][0]
-			fmt.Printf("git clone %s\n", gomodname)
-			_,err := os.Stat("./"+dirName)
-			if err == nil {
-				//There is already a directory here
-				fmt.Printf("Directory has already been cloned.\nPlease either delete it and try again or cd into it and run 'gokart scan'\n")
-				os.Exit(1)
-			}
-			_, err = git.PlainClone("./"+dirName, false, &git.CloneOptions{
-				URL: "https://"+ gomodname,
-				Progress: os.Stdout,
-			})
+			moddirname, err := util.ParseModuleName(gomodname)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Printf("CRASH! gokart couldn't parse your module.\n")
 				os.Exit(1)
 			}
-			args = append(args,"./"+dirName+"/..." )
+			err = util.CloneModule(moddirname, "https://"+gomodname)
+			if err != nil {
+				fmt.Printf("CRASH! gokart failed to fetch remote module.\n")
+				fmt.Print(err)
+				os.Exit(1)
+			}
+			// If passing in a module - the other arguments are wiped out!
+			args = append([]string{}, "./"+moddirname+"/...")
 		}
+
+		// recursively scan the current directory if no arguments are passed in
 		if len(args) == 0 {
-			// recursively scan the current directory if no arguments are passed in
 			args = append(args, "./...")
 		}
-
-
+		
 		analyzers.Scan(args)
 	},
 }
