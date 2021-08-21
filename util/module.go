@@ -26,6 +26,7 @@ import (
 func CloneModule(dir string, url string) error {
 	// fmt.Printf("git clone %s\n", url)
 	fmt.Printf("Loading new racetrack: %s\n",url)
+
 	_, err := git.PlainClone(dir, false, &git.CloneOptions{
 		URL: url,
 		Progress: os.Stdout,
@@ -33,12 +34,14 @@ func CloneModule(dir string, url string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 //CleanupModule attempts to delete a directory.
 func CleanupModule(dir string) error {
-	err := os.Remove(dir)
+	
+	err := os.RemoveAll(dir)
 	if err != nil{
 		return err
 	}
@@ -47,6 +50,11 @@ func CleanupModule(dir string) error {
 
 // ParseModuleName returns a directory from a module path 
 func ParseModuleName(mn string) (string, error) {
+
+	cur_dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
 
 	if len(mn) == 0 {
 		return "", errors.New("No module name provided")
@@ -57,7 +65,7 @@ func ParseModuleName(mn string) (string, error) {
 		return "", errors.New("Invalid remote module name!\nMust be in format of: github.com/praetorian/gokart")
 	}
 
-	dirName := modSlice[len(modSlice)-1:][0]
+	dirName := cur_dir + "/" + modSlice[len(modSlice)-1:][0]
 	return dirName, nil
 
 

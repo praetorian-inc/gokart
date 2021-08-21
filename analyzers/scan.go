@@ -40,16 +40,22 @@ var Analyzers = []*analysis.Analyzer{
 }
 
 func Scan(args []string) {
+	//Get the current dir so we can reset it later.
+	current_dir, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("Unable to get current dir.\n")
+	}
+
 	if util.Config.OutputSarif {
 		util.InitSarifReporting()
 	} else {
 		fmt.Printf("\nRevving engines VRMMM VRMMM\n3...2...1...Go!\n")
 	}
-
 	// If we're given a target path, we do some slight changes to make sure that
 	// gokart will behave as expected. Specifically we turn the path into an absolute
 	// path, and then we append /... to the end to make sure the package loading is recursive.
 	// Finally we update the current working directory to the target
+	// In order to not cause issues we set the working directory back after we are done scanning.
 	if len(args) > 0 {
 		target_path := args[0]
 		if !filepath.IsAbs(target_path) {
@@ -137,4 +143,5 @@ func Scan(args []string) {
 		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
 		fmt.Printf("GoKart found %d potentially vulnerable functions\n", count)
 	}
+	os.Chdir(current_dir)
 }

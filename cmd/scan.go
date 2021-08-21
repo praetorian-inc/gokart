@@ -67,7 +67,7 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 				os.Exit(1)
 			}
 			// If passing in a module - the other arguments are wiped out!
-			args = append([]string{}, "./"+moddirname+"/...")
+			args = append([]string{}, moddirname+"/...")
 		}
 
 		// recursively scan the current directory if no arguments are passed in
