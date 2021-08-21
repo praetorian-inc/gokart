@@ -21,9 +21,14 @@ import (
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
+	"github.com/go-git/go-git/v5"
+	"fmt"
+	"strings"
+	"os"
 )
 
 var yml string
+var gomodname string
 
 func init() {
 	goKartCmd.AddCommand(scanCmd)
@@ -32,6 +37,7 @@ func init() {
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
 	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
+	scanCmd.Flags().StringVarP(&gomodname, "remoteModule", "r", "", "Remote gomodule to scan")
 	goKartCmd.MarkFlagRequired("scan")
 }
 
@@ -41,15 +47,42 @@ var scanCmd = &cobra.Command{
 	Long: `
 Scans a Go module directory. To scan the current directory recursively, use gokart scan. To scan a specific directory, use gokart scan <directory>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			// recursively scan the current directory if no arguments are passed in
-			args = append(args, "./...")
-		}
 		sarif, _ := cmd.Flags().GetBool("sarif")
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
 		util.InitConfig(globals, sarif, verbose, debug, yml)
+		if len(gomodname) != 0 {
+			fmt.Printf("Loading remote go module: %s\n", gomodname)
+			modSlice := strings.Split(gomodname, "/")
+			if len(modSlice) <= 1 {
+				fmt.Printf("Invalid remote module name!\n")
+				os.Exit(1)
+			}
+			dirName := modSlice[len(modSlice)-1:][0]
+			fmt.Printf("git clone %s\n", gomodname)
+			_,err := os.Stat("./"+dirName)
+			if err == nil {
+				//There is already a directory here
+				fmt.Printf("Directory has already been cloned.\nPlease either delete it and try again or cd into it and run 'gokart scan'\n")
+				os.Exit(1)
+			}
+			_, err = git.PlainClone("./"+dirName, false, &git.CloneOptions{
+				URL: "https://"+ gomodname,
+				Progress: os.Stdout,
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			args = append(args,"./"+dirName+"/..." )
+		}
+		if len(args) == 0 {
+			// recursively scan the current directory if no arguments are passed in
+			args = append(args, "./...")
+		}
+
+
 		analyzers.Scan(args)
 	},
 }
