@@ -50,11 +50,6 @@ sources:
     "os":
       - "Environ"
       - "File"
-      - "FileInfo"
-      - "FileMode"
-      - "Readdir"
-      - "Readdirnames"
-      - "OpenFile"
     "crypto/tls":
       - "LoadX509KeyPair"
       - "X509KeyPair"
