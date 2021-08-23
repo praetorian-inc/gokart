@@ -39,6 +39,48 @@ var Analyzers = []*analysis.Analyzer{
 	SSRFAnalyzer,
 }
 
+func OutputResults(results []util.Finding, parent_dir string, scan_time time.Duration, success bool) {
+	var stdOutPipe, outputFile *os.File
+
+	if util.Config.OutputPath != "" {
+		stdOutPipe = os.Stdout // keep backup of the real stdout
+		// open file read/write | create if not exist | clear file at open if exists
+		outputFile, err := os.OpenFile(util.Config.OutputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			log.Fatalf("Error opening file: %v", err)
+		}
+		os.Stdout = outputFile
+	}
+
+	count := 0
+	for _, finding := range results {
+		finding.Vulnerable_Function.SourceFilename = strings.TrimPrefix(finding.Vulnerable_Function.SourceFilename, parent_dir)
+		if finding.Untrusted_Source != nil {
+			for i, source := range finding.Untrusted_Source {
+				finding.Untrusted_Source[i].SourceFilename = strings.TrimPrefix(source.SourceFilename, parent_dir)
+			}
+		}
+		if util.OutputFinding(finding) {
+			count++
+		}
+	}
+
+	// if packages were able to be scanned, print the correct output message
+	if util.Config.OutputSarif && success {
+		util.SarifPrintReport()
+		fmt.Println()
+	} else if success {
+		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
+		fmt.Printf("GoKart found %d potentially vulnerable functions\n", count)
+	}
+
+	// if output was redirected for findings, change it back to the original stdout
+	if util.Config.OutputPath != "" {
+		outputFile.Close()
+		os.Stdout = stdOutPipe // restoring the real stdout
+	}
+}
+
 func Scan(args []string) {
 	if util.Config.OutputSarif {
 		util.InitSarifReporting()
@@ -117,24 +159,5 @@ func Scan(args []string) {
 		parent_dir += "/"
 	}
 
-	count := 0
-	for _, finding := range results {
-		finding.Vulnerable_Function.SourceFilename = strings.TrimPrefix(finding.Vulnerable_Function.SourceFilename, parent_dir)
-		if finding.Untrusted_Source != nil {
-			for i, source := range finding.Untrusted_Source {
-				finding.Untrusted_Source[i].SourceFilename = strings.TrimPrefix(source.SourceFilename, parent_dir)
-			}
-		}
-		if util.OutputFinding(finding) {
-			count++
-		}
-	}
-	// if packages were able to be scanned, print the correct output message
-	if util.Config.OutputSarif && success {
-		util.SarifPrintReport()
-		fmt.Println()
-	} else if success {
-		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
-		fmt.Printf("GoKart found %d potentially vulnerable functions\n", count)
-	}
+	OutputResults(results, parent_dir, scan_time, success)
 }

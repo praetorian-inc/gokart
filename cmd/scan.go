@@ -24,6 +24,7 @@ import (
 )
 
 var yml string
+var outputPath string
 
 func init() {
 	goKartCmd.AddCommand(scanCmd)
@@ -32,6 +33,7 @@ func init() {
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
 	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
+	scanCmd.Flags().StringVarP(&outputPath, "output", "o", "", "file path to write findings output instead of stdout")
 	goKartCmd.MarkFlagRequired("scan")
 }
 
@@ -49,7 +51,7 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
-		util.InitConfig(globals, sarif, verbose, debug, yml)
+		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml)
 		analyzers.Scan(args)
 	},
 }
