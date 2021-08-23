@@ -15,6 +15,7 @@
 package util
 
 import (
+	"log"
 	"os"
 
 	"github.com/owenrumney/go-sarif/sarif"
@@ -27,7 +28,7 @@ func InitSarifReporting() {
 	report, err := sarif.New(sarif.Version210)
 	SarifReport = report
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	SarifRun = sarif.NewRun("GoKart", "https://github.com/praetorian-inc/gokart")
 }

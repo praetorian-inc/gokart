@@ -94,7 +94,7 @@ func Scan(args []string) {
 	// Run analyzers
 	results, success, err := run.Run(Analyzers, args...)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// Calculate time taken
 	scan_time := time.Since(run_begin_time)
