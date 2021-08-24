@@ -28,7 +28,8 @@ import (
 )
 
 var yml string
-var gomodname string
+var goModName string
+var outputPath string
 
 func init() {
 	goKartCmd.AddCommand(scanCmd)
@@ -36,8 +37,9 @@ func init() {
 	scanCmd.Flags().BoolP("globalsTainted", "g", false, "marks global variables as dangerous")
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
-	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
-	scanCmd.Flags().StringVarP(&gomodname, "remoteModule", "r", "", "Remote gomodule to scan")
+	scanCmd.Flags().StringVarP(&goModName, "remoteModule", "r", "", "Remote gomodule to scan")
+  scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
+	scanCmd.Flags().StringVarP(&outputPath, "output", "o", "", "file path to write findings output instead of stdout")
 	goKartCmd.MarkFlagRequired("scan")
 }
 
@@ -51,23 +53,23 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
-		util.InitConfig(globals, sarif, verbose, debug, yml)
+		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml)
 		
 		// If gomodname flag is set to a non-empty value then clone the repo and scan it
-		if len(gomodname) != 0 {
-			moddirname, err := util.ParseModuleName(gomodname)
+		if len(goModName) != 0 {
+			modDirName, err := util.ParseModuleName(goModName)
 			if err != nil {
 				fmt.Printf("CRASH! gokart couldn't parse your module.\n")
 				os.Exit(1)
 			}
-			err = util.CloneModule(moddirname, "https://"+gomodname)
+			err = util.CloneModule(modDirName, "https://"+goModName)
 			if err != nil {
 				fmt.Printf("CRASH! gokart failed to fetch remote module.\n")
 				fmt.Print(err)
 				os.Exit(1)
 			}
 			// If passing in a module - the other arguments are wiped out!
-			args = append([]string{}, moddirname+"/...")
+			args = append([]string{}, modDirName+"/...")
 		}
 
 		// recursively scan the current directory if no arguments are passed in
