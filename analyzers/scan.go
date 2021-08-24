@@ -39,7 +39,25 @@ var Analyzers = []*analysis.Analyzer{
 	SSRFAnalyzer,
 }
 
-func OutputResults(results []util.Finding, parent_dir string, scan_time time.Duration, success bool) {
+func FilterResults(unfilteredResults []util.Finding, parent_dir string) ([]util.Finding, error) {
+	filteredResults := []util.Finding{}
+
+	for _, finding := range unfilteredResults {
+		finding.Vulnerable_Function.SourceFilename = strings.TrimPrefix(finding.Vulnerable_Function.SourceFilename, parent_dir)
+		if finding.Untrusted_Source != nil {
+			for i, source := range finding.Untrusted_Source {
+				finding.Untrusted_Source[i].SourceFilename = strings.TrimPrefix(source.SourceFilename, parent_dir)
+			}
+		}
+		if util.IsValidFinding(finding) {
+			filteredResults = append(filteredResults, finding)
+		}
+	}
+
+	return filteredResults, nil
+}
+
+func OutputResults(results []util.Finding, success bool) error {
 	var stdOutPipe, outputFile *os.File
 
 	if util.Config.OutputPath != "" {
@@ -47,31 +65,19 @@ func OutputResults(results []util.Finding, parent_dir string, scan_time time.Dur
 		// open file read/write | create if not exist | clear file at open if exists
 		outputFile, err := os.OpenFile(util.Config.OutputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
-			log.Fatalf("Error opening file: %v", err)
+			return err
 		}
 		os.Stdout = outputFile
 	}
 
-	count := 0
 	for _, finding := range results {
-		finding.Vulnerable_Function.SourceFilename = strings.TrimPrefix(finding.Vulnerable_Function.SourceFilename, parent_dir)
-		if finding.Untrusted_Source != nil {
-			for i, source := range finding.Untrusted_Source {
-				finding.Untrusted_Source[i].SourceFilename = strings.TrimPrefix(source.SourceFilename, parent_dir)
-			}
-		}
-		if util.OutputFinding(finding) {
-			count++
-		}
+		util.OutputFinding(finding)
 	}
 
 	// if packages were able to be scanned, print the correct output message
 	if util.Config.OutputSarif && success {
 		util.SarifPrintReport()
 		fmt.Println()
-	} else if success {
-		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
-		fmt.Printf("GoKart found %d potentially vulnerable functions\n", count)
 	}
 
 	// if output was redirected for findings, change it back to the original stdout
@@ -79,6 +85,8 @@ func OutputResults(results []util.Finding, parent_dir string, scan_time time.Dur
 		outputFile.Close()
 		os.Stdout = stdOutPipe // restoring the real stdout
 	}
+
+	return nil
 }
 
 func Scan(args []string) {
@@ -159,5 +167,20 @@ func Scan(args []string) {
 		parent_dir += "/"
 	}
 
-	OutputResults(results, parent_dir, scan_time, success)
+	// fix-up our results to exclude invalid results + shorten long directory names
+	filteredResults, err := FilterResults(results, parent_dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// output findings to stdout or specified output file
+	err = OutputResults(filteredResults, success)
+	if err != nil {
+		log.Fatalf("Error opening output file: %v", err)
+	}
+
+	if !util.Config.OutputSarif && success {
+		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
+		fmt.Printf("GoKart found %d potentially vulnerable functions\n", len(filteredResults))
+	}
 }
