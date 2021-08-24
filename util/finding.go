@@ -48,8 +48,8 @@ func StripArguments(parentFunction string) string {
 	return strings.TrimSpace(functionName) + "(...)" + functionReturn
 }
 
-// prints out a finding; returns true if the finding was valid and false if the finding had the same source and sink
-func OutputFinding(finding Finding) bool {
+// returns true if the finding was valid and false if the finding had the same source and sink
+func IsValidFinding(finding Finding) bool {
 	if len(finding.Untrusted_Source) == 0 {
 		return false
 	}
@@ -57,6 +57,11 @@ func OutputFinding(finding Finding) bool {
 		// if the source and sink are the same, return false and do not print out the finding
 		return false
 	}
+	return true
+}
+
+// prints out a finding
+func OutputFinding(finding Finding) {
 	if Config.OutputSarif {
 		SarifRecordFinding(finding.Type, finding.message, finding.Vulnerable_Function.SourceFilename,
 			finding.Vulnerable_Function.SourceLineNum)
@@ -95,5 +100,4 @@ func OutputFinding(finding Finding) bool {
 		}
 		fmt.Printf("------------------------------------------------------------------------------\n")
 	}
-	return true
 }
