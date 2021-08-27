@@ -138,12 +138,18 @@ gokart scan go-test-bench/ -s
 # Output results to file
 gokart scan go-test-bench/ -o gokart-go-test-bench.txt
 
+# Output scarif results to file
+gokart scan go-test-bench/ -o gokart-go-test-bench.txt -s
+
 # Scan remote repository (private repos require proper authentication)
 # Repository will be cloned locally, scanned and deleted afterwards
 gokart scan -r github.com/ShiftLeftSecurity/shiftleft-go-demo -v
 
-# Use remote scan and output flags together for frictionless integration into CI/CD
+# Use remote scan and output flags together for seamless security reviews
 gokart scan -r github.com/ShiftLeftSecurity/shiftleft-go-demo -o gokart-shiftleft-go-demo.txt -v 
+
+# Use remote scan, output and sarif flags for frictionless integration into CI/CD
+gokart scan -r github.com/ShiftLeftSecurity/shiftleft-go-demo -o gokart-shiftleft-go-demo.txt -s
 ```
 
 To test out the extensibility of GoKart, you can modify the configuration file that GoKart uses to
