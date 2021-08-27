@@ -18,12 +18,16 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
+	"log"
+
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
+
 )
 
 var yml string
+var goModName string
 var outputPath string
 
 func init() {
@@ -32,7 +36,8 @@ func init() {
 	scanCmd.Flags().BoolP("globalsTainted", "g", false, "marks global variables as dangerous")
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
-	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
+	scanCmd.Flags().StringVarP(&goModName, "remoteModule", "r", "", "Remote gomodule to scan")
+  scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
 	scanCmd.Flags().StringVarP(&outputPath, "output", "o", "", "file path to write findings output instead of stdout")
 	goKartCmd.MarkFlagRequired("scan")
 }
@@ -43,15 +48,32 @@ var scanCmd = &cobra.Command{
 	Long: `
 Scans a Go module directory. To scan the current directory recursively, use gokart scan. To scan a specific directory, use gokart scan <directory>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			// recursively scan the current directory if no arguments are passed in
-			args = append(args, "./...")
-		}
 		sarif, _ := cmd.Flags().GetBool("sarif")
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
 		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml)
+		
+		// If gomodname flag is set to a non-empty value then clone the repo and scan it
+		if len(goModName) != 0 {
+			modDirName, err := util.ParseModuleName(goModName)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = util.CloneModule(modDirName, "https://"+goModName)
+			if err != nil {
+				log.Fatal("GoKart was unable to get the new racetrack. Ensure track repository is open to the public or that your access tokens are configured correctly for Private ones.")
+			}
+			defer util.CleanupModule(modDirName)
+			// If passing in a module - the other arguments are wiped out!
+			args = append([]string{}, modDirName+"/...")
+		}
+
+		// recursively scan the current directory if no arguments are passed in
+		if len(args) == 0 {
+			args = append(args, "./...")
+		}
+		
 		analyzers.Scan(args)
 	},
 }
