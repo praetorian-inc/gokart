@@ -18,8 +18,7 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
-	"os"
-	"fmt"
+	"log"
 
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
@@ -59,15 +58,13 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		if len(goModName) != 0 {
 			modDirName, err := util.ParseModuleName(goModName)
 			if err != nil {
-				fmt.Printf("CRASH! gokart couldn't parse your module.\n")
-				os.Exit(1)
+				log.Fatal(err)
 			}
 			err = util.CloneModule(modDirName, "https://"+goModName)
 			if err != nil {
-				fmt.Printf("CRASH! gokart failed to fetch remote module.\n")
-				fmt.Print(err)
-				os.Exit(1)
+				log.Fatal("GoKart was unable to get the new racetrack. Ensure track repository is open to the public or that your access tokens are configured correctly for Private ones.")
 			}
+			defer util.CleanupModule(modDirName)
 			// If passing in a module - the other arguments are wiped out!
 			args = append([]string{}, modDirName+"/...")
 		}
