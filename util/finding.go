@@ -70,6 +70,7 @@ func OutputFinding(finding Finding) {
 		cyan := color.New(color.FgCyan).SprintFunc()
 		green := color.New(color.FgGreen).SprintFunc()
 
+		parentFunctionArgs := finding.Vulnerable_Function.ParentFunction
 		parentFunctionNoArgs := StripArguments(finding.Vulnerable_Function.ParentFunction)
 
 		fmt.Printf("\n(%s) %s\n\n", cyan(finding.Type), yellow(finding.message))
@@ -82,7 +83,7 @@ func OutputFinding(finding Finding) {
 
 			source := finding.Untrusted_Source[0]
 			fmt.Printf("\n%s:%d\n", source.SourceFilename, source.SourceLineNum)
-			fmt.Printf("Source of Untrusted Input: [ %s ]\n", source.ParentFunction)
+			fmt.Printf("Source of Untrusted Input: [ %s ]\n", parentFunctionNoArgs)
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum-1, GrabSourceCode(source.SourceFilename, source.SourceLineNum-1))
 			fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, source.SourceCode)
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum+1, GrabSourceCode(source.SourceFilename, source.SourceLineNum+1))
@@ -92,7 +93,7 @@ func OutputFinding(finding Finding) {
 				fmt.Printf("\nUntrusted Input Source:")
 				for _, source := range finding.Untrusted_Source {
 					fmt.Printf("%s:%d:\n[ %s ]\n>>>\t%s\n", source.SourceFilename,
-						source.SourceLineNum, source.ParentFunction, strings.TrimLeft(source.SourceCode, " \t"))
+						source.SourceLineNum, parentFunctionArgs, strings.TrimLeft(source.SourceCode, " \t"))
 				}
 			}
 
