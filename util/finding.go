@@ -58,6 +58,7 @@ func IsValidFinding(finding Finding) bool {
 		// if the source and sink are the same, return false and do not print out the finding
 		return false
 	}
+	// add filtering for findings with chan sources
 	if strings.Contains(finding.Untrusted_Source[0].SourceCode, "make(chan") {
 		log.Printf("Filtering Finding for Source: %s\n", finding.Untrusted_Source[0].SourceCode)
 		return false
