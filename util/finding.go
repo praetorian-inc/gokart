@@ -60,7 +60,9 @@ func IsValidFinding(finding Finding) bool {
 	}
 	// add filtering for findings with chan sources
 	if strings.Contains(finding.Untrusted_Source[0].SourceCode, "make(chan") {
-		log.Printf("Filtering Finding for Source: %s\n", finding.Untrusted_Source[0].SourceCode)
+		if Config.Debug {
+			log.Printf("Filtering Finding for Source: %s\n", finding.Untrusted_Source[0].SourceCode)
+		}
 		return false
 	}
 	return true
