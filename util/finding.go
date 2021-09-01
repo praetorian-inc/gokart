@@ -70,10 +70,10 @@ func OutputFinding(finding Finding) {
 		cyan := color.New(color.FgCyan).SprintFunc()
 		green := color.New(color.FgGreen).SprintFunc()
 
-		parentFunctionNoArgs := StripArguments(finding.Vulnerable_Function.ParentFunction)
+		sinkParentNoArgs := StripArguments(finding.Vulnerable_Function.ParentFunction)
 
 		fmt.Printf("\n(%s) %s\n\n", cyan(finding.Type), yellow(finding.message))
-		fmt.Printf("%s:%d\nVulnerable Function: [ %s ]\n", finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum, parentFunctionNoArgs)
+		fmt.Printf("%s:%d\nVulnerable Function: [ %s ]\n", finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum, sinkParentNoArgs)
 		fmt.Printf("      %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum-1, GrabSourceCode(finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum-1))
 		fmt.Printf("    > %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum, finding.Vulnerable_Function.SourceCode)
 		fmt.Printf("      %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum+1, GrabSourceCode(finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum+1))
@@ -84,7 +84,7 @@ func OutputFinding(finding Finding) {
 			fmt.Printf("\n%s:%d\n", source.SourceFilename, source.SourceLineNum)
 			fmt.Printf("Source of Untrusted Input: [ %s ]\n", source.ParentFunction)
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum-1, GrabSourceCode(source.SourceFilename, source.SourceLineNum-1))
-			fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, source.SourceCode)
+			fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, StripArguments(source.SourceCode))
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum+1, GrabSourceCode(source.SourceFilename, source.SourceLineNum+1))
 
 			if Config.Verbose {
