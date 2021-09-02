@@ -19,6 +19,7 @@ and a generic analyzer based on recursive taint propagation
 package analyzers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -89,7 +90,7 @@ func OutputResults(results []util.Finding, success bool) error {
 	return nil
 }
 
-func Scan(args []string) {
+func Scan(args []string) ([]util.Finding, error) {
 	//Get the current dir so we can reset it later.
 	current_dir, err := os.Getwd()
 	if err != nil {
@@ -190,4 +191,10 @@ func Scan(args []string) {
 		fmt.Printf("GoKart found %d potentially vulnerable functions\n", len(filteredResults))
 	}
 	os.Chdir(current_dir)
+
+	if !success {
+		return nil, errors.New("gokart could not find any packages to scan")
+	}
+
+	return filteredResults, nil
 }

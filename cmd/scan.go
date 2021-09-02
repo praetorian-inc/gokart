@@ -19,14 +19,15 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/praetorian-inc/gokart/analyzers"
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
-
 )
 
 var yml string
+var exitCode bool
 var goModName string
 var outputPath string
 
@@ -36,8 +37,9 @@ func init() {
 	scanCmd.Flags().BoolP("globalsTainted", "g", false, "marks global variables as dangerous")
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
+	scanCmd.Flags().BoolP("exitCode", "x", false, "return non-nil exit code on potential vulnerabilities or scanner failure")
 	scanCmd.Flags().StringVarP(&goModName, "remoteModule", "r", "", "Remote gomodule to scan")
-  scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
+	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
 	scanCmd.Flags().StringVarP(&outputPath, "output", "o", "", "file path to write findings output instead of stdout")
 	goKartCmd.MarkFlagRequired("scan")
 }
@@ -52,8 +54,9 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
+		exitCode, _ := cmd.Flags().GetBool("exitCode")
 		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml)
-		
+
 		// If gomodname flag is set to a non-empty value then clone the repo and scan it
 		if len(goModName) != 0 {
 			modDirName, err := util.ParseModuleName(goModName)
@@ -73,7 +76,11 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		if len(args) == 0 {
 			args = append(args, "./...")
 		}
-		
-		analyzers.Scan(args)
+
+		results, err := analyzers.Scan(args)
+		// If we have set the flag to return non-zero exit code for when results are found or the scanner fails, return 1
+		if exitCode && (err != nil || len(results) > 0) {
+			os.Exit(1)
+		}
 	},
 }
