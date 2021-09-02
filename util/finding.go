@@ -16,6 +16,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/fatih/color"
@@ -55,6 +56,13 @@ func IsValidFinding(finding Finding) bool {
 	}
 	if finding.Vulnerable_Function.SourceCode == finding.Untrusted_Source[0].SourceCode {
 		// if the source and sink are the same, return false and do not print out the finding
+		return false
+	}
+	// add filtering for findings with chan sources
+	if strings.Contains(finding.Untrusted_Source[0].SourceCode, "make(chan") {
+		if Config.Debug {
+			log.Printf("Filtering Finding for Source: %s\n", finding.Untrusted_Source[0].SourceCode)
+		}
 		return false
 	}
 	return true
