@@ -32,6 +32,7 @@ type ConfigType struct {
 	OutputSarif bool
 	Debug       bool
 	Verbose     bool
+	ExitCode    bool
 	YMLPath     string
 	OutputPath  string
 }
@@ -121,7 +122,7 @@ func LoadScanConfig() {
 }
 
 // InitConfig() parses the flags and sets the corresponding Config variables
-func InitConfig(globals bool, sarif bool, verbose bool, debug bool, output_path string, yml string) {
+func InitConfig(globals bool, sarif bool, verbose bool, debug bool, output_path string, yml string, exitCode bool) {
 	if yml == "" {
 		yml = getDefaultConfigPath()
 	} else if _, err := os.Stat(yml); err != nil {
@@ -133,6 +134,7 @@ func InitConfig(globals bool, sarif bool, verbose bool, debug bool, output_path 
 	Config.OutputSarif = sarif
 	Config.Debug = debug
 	Config.Verbose = verbose
+	Config.ExitCode = exitCode
 	Config.OutputPath = ""
 	// get the absolute path of the output file to avoid issues when changing working directory for loading packages
 	if output_path != "" {

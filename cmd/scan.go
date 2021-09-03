@@ -55,7 +55,7 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
 		exitCode, _ := cmd.Flags().GetBool("exitCode")
-		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml)
+		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml, exitCode)
 
 		// If gomodname flag is set to a non-empty value then clone the repo and scan it
 		if len(goModName) != 0 {
