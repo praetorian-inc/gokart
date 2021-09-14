@@ -173,9 +173,9 @@ func rsaRun(pass *analysis.Pass) (interface{}, error) {
 
 				// Check if argument of vulnerable function has keylen that is less than RECOMMENDED_KEYLEN
 				if keylen_check(pass, vulnFunc.Instr.Call.Args[1], call_graph) {
-					message := fmt.Sprintf("Danger: key length is too short, recommend %d", RECOMMENDED_KEYLEN)
+					message := fmt.Sprintf("Danger: RSA key length is too short, recommend %d", RECOMMENDED_KEYLEN)
 					targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
-					results = append(results, util.MakeFinding(message, targetFunc, nil, "RSA Key Length"))
+					results = append(results, util.MakeFinding(message, targetFunc, nil, "CWE-326: Inadequate Encryption Strength"))
 				}
 			}
 		}

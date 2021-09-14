@@ -80,7 +80,7 @@ func sqlRun(pass *analysis.Pass) (interface{}, error) {
 					message := "Danger: possible SQL injection detected"
 					targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
 					taintSource := taint_analyzer.TaintSource
-					results = append(results, util.MakeFinding(message, targetFunc, taintSource, "SQL Injection"))
+					results = append(results, util.MakeFinding(message, targetFunc, taintSource, "CWE-89: SQL Injection"))
 				}
 			}
 		}
