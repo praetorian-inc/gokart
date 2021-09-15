@@ -83,6 +83,25 @@ $ go build
 $ mv ./gokart /usr/local/bin
 ```
 
+### Docker Support
+Build the docker image
+```shell
+docker build -t gokart .
+```
+
+Running the container with a local scan (the local scan directory needs to be mounted to the container image)
+```shell
+docker run -v /path/to/scan-dir:/scan-dir gokart scan /scan-dir
+```
+
+Running the container with a remote scan (when specifying a private key for auth, that will also need to be mounted to the container)
+```shell
+docker run gokart scan -r https://github.com/praetorian-inc/gokart
+
+# specifying a private key for private repository ssh authentication
+docker run -v /path/to/key-dir/:/key-dir gokart scan -r git@github.com:praetorian-inc/gokart.git -k /key-dir/ssh_key
+```
+
 ## Usage
 
 ### Run GoKart on a Go module in the current directory
