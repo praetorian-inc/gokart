@@ -39,7 +39,7 @@ func TestCommandInjection(t *testing.T) {
 	}
 	for i := 0; i < len(testFiles); i++ {
 		t.Run(testFiles[i], func(t *testing.T) {
-			testutil.RunTest(testFiles[i], testResults[i], "Command Injection", CommandInjectionAnalyzer, t)
+			testutil.RunTest(testFiles[i], testResults[i], "CWE-78: OS Command Injection", CommandInjectionAnalyzer, t)
 		})
 	}
 }

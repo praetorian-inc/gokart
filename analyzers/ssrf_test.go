@@ -47,7 +47,7 @@ func TestSSRF(t *testing.T) {
 	}
 	for i := 0; i < len(testFiles); i++ {
 		t.Run(testFiles[i], func(t *testing.T) {
-			testutil.RunTest(testFiles[i], testResults[i], "SSRF", SSRFAnalyzer, t)
+			testutil.RunTest(testFiles[i], testResults[i], "CWE-918: Server-Side Request Forgery", SSRFAnalyzer, t)
 		})
 	}
 }

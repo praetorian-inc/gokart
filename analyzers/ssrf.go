@@ -158,7 +158,7 @@ func ssrfRun(pass *analysis.Pass) (interface{}, error) {
 								message := "Danger: possible SSRF detected"
 								targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
 								taintSource := taintAnalyzer.TaintSource
-								results = append(results, util.MakeFinding(message, targetFunc, taintSource, "SSRF"))
+								results = append(results, util.MakeFinding(message, targetFunc, taintSource, "CWE-918: Server-Side Request Forgery"))
 
 							}
 						}
@@ -169,7 +169,7 @@ func ssrfRun(pass *analysis.Pass) (interface{}, error) {
 							message := "Danger: possible SSRF detected"
 							targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
 							taintSource := taintAnalyzer.TaintSource
-							results = append(results, util.MakeFinding(message, targetFunc, taintSource, "SSRF"))
+							results = append(results, util.MakeFinding(message, targetFunc, taintSource, "CWE-918: Server-Side Request Forgery"))
 
 						}
 					}

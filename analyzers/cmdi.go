@@ -75,7 +75,7 @@ func cmdInjectionRun(pass *analysis.Pass) (interface{}, error) {
 						message := "Danger: possible command injection detected"
 						targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
 						taintSource := taintAnalyzer.TaintSource
-						finding := util.MakeFinding(message, targetFunc, taintSource, "Command Injection")
+						finding := util.MakeFinding(message, targetFunc, taintSource, "CWE-78: OS Command Injection")
 						results = append(results, finding)
 					}
 				}

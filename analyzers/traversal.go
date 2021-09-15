@@ -75,7 +75,7 @@ func traversalRun(pass *analysis.Pass) (interface{}, error) {
 
 					targetFunc := util.GenerateTaintedCode(pass, vulnFunc.Fn, vulnFunc.Instr.Pos())
 					taintSource := taintAnalyzer.TaintSource
-					results = append(results, util.MakeFinding(message, targetFunc, taintSource, "Path Traversal"))
+					results = append(results, util.MakeFinding(message, targetFunc, taintSource, "CWE-22: Path Traversal"))
 
 				}
 			}
