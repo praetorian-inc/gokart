@@ -65,13 +65,17 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		// If remoteModule was set, clone the remote repository and scan it
 		if len(remoteModule) != 0 {
 			moduleTempDir, err := ioutil.TempDir(".", "gokart")
+			if err != nil {
+				log.Fatal("Error creating temporary directory: ", err.Error())
+			}
+			defer util.CleanupModule(moduleTempDir)
 
 			err = util.CloneModule(moduleTempDir, remoteModule, remoteBranch, keyFile)
 
 			if err != nil {
+				util.CleanupModule(moduleTempDir)
 				log.Fatal("Error cloning remote repository: ", err.Error())
 			}
-			defer util.CleanupModule(moduleTempDir)
 			// If passing in a module - the other arguments are wiped out!
 			args = append([]string{}, moduleTempDir+"/...")
 		}
