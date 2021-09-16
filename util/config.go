@@ -30,6 +30,7 @@ import (
 type ConfigType struct {
 	GlobalsSafe bool
 	OutputSarif bool
+	OutputJSON  bool
 	Debug       bool
 	Verbose     bool
 	ExitCode    bool
@@ -122,16 +123,19 @@ func LoadScanConfig() {
 }
 
 // InitConfig() parses the flags and sets the corresponding Config variables
-func InitConfig(globals bool, sarif bool, verbose bool, debug bool, output_path string, yml string, exitCode bool) {
+func InitConfig(globals bool, sarif bool, json bool, verbose bool, debug bool, output_path string, yml string, exitCode bool) {
 	if yml == "" {
 		yml = getDefaultConfigPath()
 	} else if _, err := os.Stat(yml); err != nil {
 		log.Fatalf("failed to find the provided config file at %s: %v", yml, err)
 	}
-	fmt.Printf("Using config found at %s\n", yml)
+	if !(json || sarif) {
+		fmt.Printf("Using config found at %s\n", yml)
+	}
 
 	Config.GlobalsSafe = !globals
 	Config.OutputSarif = sarif
+	Config.OutputJSON = json
 	Config.Debug = debug
 	Config.Verbose = verbose
 	Config.ExitCode = exitCode

@@ -34,6 +34,7 @@ var outputPath string
 func init() {
 	goKartCmd.AddCommand(scanCmd)
 	scanCmd.Flags().BoolP("sarif", "s", false, "outputs findings in SARIF form")
+	scanCmd.Flags().BoolP("json", "j", false, "outputs findings in JSON")
 	scanCmd.Flags().BoolP("globalsTainted", "g", false, "marks global variables as dangerous")
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
@@ -51,11 +52,12 @@ var scanCmd = &cobra.Command{
 Scans a Go module directory. To scan the current directory recursively, use gokart scan. To scan a specific directory, use gokart scan <directory>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		sarif, _ := cmd.Flags().GetBool("sarif")
+		json, _ := cmd.Flags().GetBool("json")
 		globals, _ := cmd.Flags().GetBool("globalsTainted")
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		debug, _ := cmd.Flags().GetBool("debug")
 		exitCode, _ := cmd.Flags().GetBool("exitCode")
-		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml, exitCode)
+		util.InitConfig(globals, sarif, json, verbose, debug, outputPath, yml, exitCode)
 
 		// If gomodname flag is set to a non-empty value then clone the repo and scan it
 		if len(goModName) != 0 {

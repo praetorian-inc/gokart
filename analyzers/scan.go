@@ -19,6 +19,7 @@ and a generic analyzer based on recursive taint propagation
 package analyzers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -71,6 +72,14 @@ func OutputResults(results []util.Finding, success bool) error {
 		os.Stdout = outputFile
 	}
 
+	if util.Config.OutputJSON && success {
+		res, err := json.Marshal(results)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(res))
+	}
+
 	for _, finding := range results {
 		util.OutputFinding(finding)
 	}
@@ -99,6 +108,8 @@ func Scan(args []string) ([]util.Finding, error) {
 
 	if util.Config.OutputSarif {
 		util.InitSarifReporting()
+	} else if util.Config.OutputJSON {
+		// don't print out anything
 	} else {
 		fmt.Printf("\nRevving engines VRMMM VRMMM\n3...2...1...Go!\n")
 	}
@@ -186,7 +197,8 @@ func Scan(args []string) ([]util.Finding, error) {
 		log.Fatalf("Error opening output file: %v", err)
 	}
 
-	if !util.Config.OutputSarif && success {
+	// Don't print out messages if JSON or SARIF output
+	if !(util.Config.OutputSarif || util.Config.OutputJSON) && success {
 		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
 		fmt.Printf("GoKart found %d potentially vulnerable functions\n", len(filteredResults))
 	}
