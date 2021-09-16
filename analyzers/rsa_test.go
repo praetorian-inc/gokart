@@ -51,7 +51,7 @@ func TestRsaKeylen(t *testing.T) {
 	}
 	for i := 0; i < len(testFiles); i++ {
 		t.Run(testFiles[i], func(t *testing.T) {
-			testutil.RunTest(testFiles[i], testResults[i], "RSA Key Length", RsaKeylenAnalyzer, t)
+			testutil.RunTest(testFiles[i], testResults[i], "CWE-326: Inadequate Encryption Strength", RsaKeylenAnalyzer, t)
 		})
 	}
 }

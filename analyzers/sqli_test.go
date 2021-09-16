@@ -39,7 +39,7 @@ func TestSQLInjection(t *testing.T) {
 	}
 	for i := 0; i < len(testFiles); i++ {
 		t.Run(testFiles[i], func(t *testing.T) {
-			testutil.RunTest(testFiles[i], testResults[i], "SQL Injection", SQLInjectionAnalyzer, t)
+			testutil.RunTest(testFiles[i], testResults[i], "CWE-89: SQL Injection", SQLInjectionAnalyzer, t)
 		})
 	}
 }
