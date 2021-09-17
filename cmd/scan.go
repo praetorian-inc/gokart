@@ -18,6 +18,7 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -28,8 +29,10 @@ import (
 
 var yml string
 var exitCode bool
-var goModName string
+var remoteModule string
 var outputPath string
+var remoteBranch string
+var keyFile string
 
 func init() {
 	goKartCmd.AddCommand(scanCmd)
@@ -38,7 +41,9 @@ func init() {
 	scanCmd.Flags().BoolP("verbose", "v", false, "outputs full trace of taint analysis")
 	scanCmd.Flags().BoolP("debug", "d", false, "outputs debug logs")
 	scanCmd.Flags().BoolP("exitCode", "x", false, "return non-nil exit code on potential vulnerabilities or scanner failure")
-	scanCmd.Flags().StringVarP(&goModName, "remoteModule", "r", "", "Remote gomodule to scan")
+	scanCmd.Flags().StringVarP(&remoteModule, "remoteModule", "r", "", "Remote gomodule to scan")
+	scanCmd.Flags().StringVarP(&remoteBranch, "remoteBranch", "b", "", "Branch of remote module to scan")
+	scanCmd.Flags().StringVarP(&keyFile, "keyFile", "k", "", "SSH Keyfile to use for ssh authentication for remote git repository scanning")
 	scanCmd.Flags().StringVarP(&yml, "input", "i", "", "input path to custom yml file")
 	scanCmd.Flags().StringVarP(&outputPath, "output", "o", "", "file path to write findings output instead of stdout")
 	goKartCmd.MarkFlagRequired("scan")
@@ -57,19 +62,22 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 		exitCode, _ := cmd.Flags().GetBool("exitCode")
 		util.InitConfig(globals, sarif, verbose, debug, outputPath, yml, exitCode)
 
-		// If gomodname flag is set to a non-empty value then clone the repo and scan it
-		if len(goModName) != 0 {
-			modDirName, err := util.ParseModuleName(goModName)
+		// If remoteModule was set, clone the remote repository and scan it
+		if len(remoteModule) != 0 {
+			moduleTempDir, err := ioutil.TempDir(".", "gokart")
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("Error creating temporary directory: ", err.Error())
 			}
-			err = util.CloneModule(modDirName, "https://"+goModName)
+			defer util.CleanupModule(moduleTempDir)
+
+			err = util.CloneModule(moduleTempDir, remoteModule, remoteBranch, keyFile)
+
 			if err != nil {
-				log.Fatal("GoKart was unable to get the new racetrack. Ensure track repository is open to the public or that your access tokens are configured correctly for Private ones.")
+				util.CleanupModule(moduleTempDir)
+				log.Fatal("Error cloning remote repository: ", err.Error())
 			}
-			defer util.CleanupModule(modDirName)
 			// If passing in a module - the other arguments are wiped out!
-			args = append([]string{}, modDirName+"/...")
+			args = append([]string{}, moduleTempDir+"/...")
 		}
 
 		// recursively scan the current directory if no arguments are passed in

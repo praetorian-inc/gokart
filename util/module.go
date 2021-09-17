@@ -15,58 +15,53 @@
 package util
 
 import (
-	"github.com/go-git/go-git/v5"
-	"fmt"
-	"strings"
+	"log"
 	"os"
-	"errors"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
-// CloneModule clones a remote git repository over HTTP.
-func CloneModule(dir string, url string) error {
-	// fmt.Printf("git clone %s\n", url)
-	fmt.Printf("Loading new racetrack: %s\n",url)
+// CloneModule clones a remote git repository
+// An optional keyfile may be specified for use in ssh authentication
+func CloneModule(dir string, url string, branch string, keyFile string) error {
+	var cloneOptions git.CloneOptions
 
-	_, err := git.PlainClone(dir, false, &git.CloneOptions{
-		URL: url,
+	log.Printf("Cloning new remote module: %s\n", url)
+	cloneOptions = git.CloneOptions{
+		URL:      url,
 		Progress: os.Stdout,
-	})
-	if err != nil {
-		return err
 	}
 
-	return nil
+	if len(branch) != 0 {
+		log.Printf("Cloning with remote branch reference: %s\n", branch)
+		cloneOptions.ReferenceName = plumbing.NewBranchReferenceName(branch)
+	}
+
+	if len(keyFile) != 0 {
+		_, err := os.Stat(keyFile)
+		if err != nil {
+			log.Printf("Read file %s failed %s\n", keyFile, err.Error())
+			return err
+		}
+
+		// Clone the given repository to the given directory (password set to "")
+		publicKeys, err := ssh.NewPublicKeysFromFile("git", keyFile, "")
+		if err != nil {
+			log.Printf("Generate publickeys from file %s failed: %s\n", keyFile, err.Error())
+			return err
+		}
+		log.Printf("Authenticating with ssh keyfile: %s\n", keyFile)
+		cloneOptions.Auth = publicKeys
+	}
+
+	_, err := git.PlainClone(dir, false, &cloneOptions)
+	return err
 }
 
 //CleanupModule attempts to delete a directory.
 func CleanupModule(dir string) error {
-	
 	err := os.RemoveAll(dir)
-	if err != nil{
-		return err
-	}
-	return nil
-}
-
-// ParseModuleName returns a directory from a module path 
-func ParseModuleName(mn string) (string, error) {
-
-	cur_dir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	if len(mn) == 0 {
-		return "", errors.New("No module name provided")
-	}
-
-	modSlice := strings.Split(mn, "/")
-	if len(modSlice) <= 1 {
-		return "", errors.New("Invalid remote module name!\nMust be in format of: github.com/praetorian/gokart")
-	}
-
-	dirName := cur_dir + "/" + modSlice[len(modSlice)-1:][0]
-	return dirName, nil
-
-
+	return err
 }

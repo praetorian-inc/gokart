@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"testing"
-	"strings"
 	"fmt"
-	"os"
 	"io/ioutil"
-	
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/praetorian-inc/gokart/util"
 	"github.com/spf13/cobra"
 )
@@ -20,20 +20,20 @@ func TestScanCommand(t *testing.T) {
 	}
 	fmt.Printf("Current dir is: %s", cur_dir)
 	var tests = []struct {
-		args []string
+		args              []string
 		expected_lastline string
-		moduledir string
+		moduledir         string
 	}{
-		{[]string{"scan"},"GoKart found 0 potentially vulnerable functions", ""},
-		{[]string{"scan","-r", "github.com/Contrast-Security-OSS/go-test-bench"}, "GoKart found 8 potentially vulnerable functions", cur_dir+"/go-test-bench"},
-		{[]string{"scan","-r", "github.com/praetorian-inc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir+"/gokart"},
+		{[]string{"scan"}, "GoKart found 0 potentially vulnerable functions", ""},
+		{[]string{"scan", "-r", "https://github.com/Contrast-Security-OSS/go-test-bench"}, "GoKart found 8 potentially vulnerable functions", cur_dir + "/go-test-bench"},
+		{[]string{"scan", "-r", "https://github.com/praetorian-inc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir + "/gokart"},
 		{[]string{"scan", "--help"}, "  -v, --verbose               outputs full trace of taint analysis", ""},
 	}
 	for _, tt := range tests {
 		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
-			
+
 			if err != nil {
-				t.Fatalf("Failed! %s",err)
+				t.Fatalf("Failed! %s", err)
 			}
 
 			// fetch last line of output from scan command
@@ -46,13 +46,13 @@ func TestScanCommand(t *testing.T) {
 				}
 			}
 			if lastline != tt.expected_lastline {
-				t.Fatalf("Failed! Expected: %s\nGot: %s\n",tt.expected_lastline,lastline,)
-			} 
+				t.Fatalf("Failed! Expected: %s\nGot: %s\n", tt.expected_lastline, lastline)
+			}
 		})
 	}
 }
 
-func ExecuteCommand(cmd *cobra.Command,args []string) (string) {
+func ExecuteCommand(cmd *cobra.Command, args []string) string {
 
 	// change stdout to something we can read from to capture command out
 	// Not sure if this could potentially cause issues if buffer gets too full
