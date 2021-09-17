@@ -68,8 +68,32 @@ func IsValidFinding(finding Finding) bool {
 	return true
 }
 
+func OutputFindingMetadata(results []Finding, outputColor bool) {
+	var ok bool
+	findingCounts := make(map[string]int)
+
+	for _, finding := range results {
+		_, ok = findingCounts[finding.Type]
+		if ok {
+			findingCounts[finding.Type] += 1
+		} else {
+			findingCounts[finding.Type] = 1
+		}
+	}
+
+	for findingType, count := range findingCounts {
+		if outputColor {
+			yellow := color.New(color.FgYellow).SprintFunc()
+			cyan := color.New(color.FgCyan).SprintFunc()
+			fmt.Printf("Identified %s potential %s\n", yellow(count), cyan(findingType))
+		} else {
+			fmt.Printf("Identified %d potential %s\n", count, findingType)
+		}
+	}
+}
+
 // prints out a finding
-func OutputFinding(finding Finding) {
+func OutputFinding(finding Finding, outputColor bool) {
 	if Config.OutputSarif {
 		SarifRecordFinding(finding.Type, finding.message, finding.Vulnerable_Function.SourceFilename,
 			finding.Vulnerable_Function.SourceLineNum)
@@ -83,7 +107,11 @@ func OutputFinding(finding Finding) {
 
 		sinkParentNoArgs := StripArguments(finding.Vulnerable_Function.ParentFunction)
 
-		fmt.Printf("\n(%s) %s\n\n", cyan(finding.Type), yellow(finding.message))
+		if outputColor {
+			fmt.Printf("\n(%s) %s\n\n", cyan(finding.Type), yellow(finding.message))
+		} else {
+			fmt.Printf("\n(%s) %s\n\n", finding.Type, finding.message)
+		}
 		fmt.Printf("%s:%d\nVulnerable Function: [ %s ]\n", finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum, sinkParentNoArgs)
 		fmt.Printf("      %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum-1, GrabSourceCode(finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum-1))
 		fmt.Printf("    > %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum, finding.Vulnerable_Function.SourceCode)
@@ -99,7 +127,11 @@ func OutputFinding(finding Finding) {
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum+1, GrabSourceCode(source.SourceFilename, source.SourceLineNum+1))
 
 			if Config.Verbose {
-				fmt.Print(green("\n############################### FULL TRACE ###############################\n"))
+				if outputColor {
+					fmt.Print(green("\n############################### FULL TRACE ###############################\n"))
+				} else {
+					fmt.Print("\n############################### FULL TRACE ###############################\n")
+				}
 				fmt.Printf("\nUntrusted Input Source:")
 				for _, source := range finding.Untrusted_Source {
 					fmt.Printf("%s:%d:\n[ %s ]\n>>>\t%s\n", source.SourceFilename,

@@ -25,8 +25,7 @@ func TestScanCommand(t *testing.T) {
 		moduledir         string
 	}{
 		{[]string{"scan"}, "GoKart found 0 potentially vulnerable functions", ""},
-		{[]string{"scan", "-r", "https://github.com/Contrast-Security-OSS/go-test-bench"}, "GoKart found 8 potentially vulnerable functions", cur_dir + "/go-test-bench"},
-		{[]string{"scan", "-r", "https://github.com/praetorian-inc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir + "/gokart"},
+		{[]string{"scan", "-r", "github.com/praetorian-inc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir + "/gokart"},
 		{[]string{"scan", "--help"}, "  -v, --verbose               outputs full trace of taint analysis", ""},
 	}
 	for _, tt := range tests {

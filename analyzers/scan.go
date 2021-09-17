@@ -61,6 +61,7 @@ func FilterResults(unfilteredResults []util.Finding, parent_dir string) ([]util.
 
 func OutputResults(results []util.Finding, success bool) error {
 	var stdOutPipe, outputFile *os.File
+	var outputColor = true
 
 	if util.Config.OutputPath != "" {
 		stdOutPipe = os.Stdout // keep backup of the real stdout
@@ -70,6 +71,15 @@ func OutputResults(results []util.Finding, success bool) error {
 			return err
 		}
 		os.Stdout = outputFile
+		outputColor = false
+	}
+
+	if util.Config.OutputJSON && success {
+		res, err := json.Marshal(results)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(res))
 	}
 
 	if util.Config.OutputJSON && success {
@@ -81,7 +91,7 @@ func OutputResults(results []util.Finding, success bool) error {
 	}
 
 	for _, finding := range results {
-		util.OutputFinding(finding)
+		util.OutputFinding(finding, outputColor)
 	}
 
 	// if packages were able to be scanned, print the correct output message
@@ -92,6 +102,8 @@ func OutputResults(results []util.Finding, success bool) error {
 
 	// if output was redirected for findings, change it back to the original stdout
 	if util.Config.OutputPath != "" {
+		// also generate the count of findings identified to the output file
+		util.OutputFindingMetadata(results, outputColor)
 		outputFile.Close()
 		os.Stdout = stdOutPipe // restoring the real stdout
 	}
@@ -201,6 +213,8 @@ func Scan(args []string) ([]util.Finding, error) {
 	if !(util.Config.OutputSarif || util.Config.OutputJSON) && success {
 		fmt.Println("\nRace Complete! Analysis took", scan_time, "and", util.FilesFound, "Go files were scanned (including imported packages)")
 		fmt.Printf("GoKart found %d potentially vulnerable functions\n", len(filteredResults))
+		// display information about all findings
+		util.OutputFindingMetadata(filteredResults, true)
 	}
 	os.Chdir(current_dir)
 
