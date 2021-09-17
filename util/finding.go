@@ -73,6 +73,9 @@ func OutputFinding(finding Finding) {
 	if Config.OutputSarif {
 		SarifRecordFinding(finding.Type, finding.message, finding.Vulnerable_Function.SourceFilename,
 			finding.Vulnerable_Function.SourceLineNum)
+	} else if Config.OutputJSON {
+		// the JSON output is printed in OutputResults in scan.go, so nothing to do for this finding
+		return
 	} else {
 		yellow := color.New(color.FgYellow).SprintFunc()
 		cyan := color.New(color.FgCyan).SprintFunc()
