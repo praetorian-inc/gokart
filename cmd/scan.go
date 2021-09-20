@@ -72,7 +72,8 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 			}
 			defer util.CleanupModule(moduleTempDir)
 
-			err = util.CloneModule(moduleTempDir, remoteModule, remoteBranch, keyFile)
+			// Clone the module, if the output format is JSON or SARIF don't print any progress to stdout
+			err = util.CloneModule(moduleTempDir, remoteModule, remoteBranch, keyFile, json || sarif)
 
 			if err != nil {
 				util.CleanupModule(moduleTempDir)
