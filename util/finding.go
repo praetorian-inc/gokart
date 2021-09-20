@@ -104,6 +104,7 @@ func OutputFinding(finding Finding, outputColor bool) {
 		yellow := color.New(color.FgYellow).SprintFunc()
 		cyan := color.New(color.FgCyan).SprintFunc()
 		green := color.New(color.FgGreen).SprintFunc()
+		red := color.New(color.FgRed).SprintFunc()
 
 		sinkParentNoArgs := StripArguments(finding.Vulnerable_Function.ParentFunction)
 
@@ -114,7 +115,11 @@ func OutputFinding(finding Finding, outputColor bool) {
 		}
 		fmt.Printf("%s:%d\nVulnerable Function: [ %s ]\n", finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum, sinkParentNoArgs)
 		fmt.Printf("      %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum-1, GrabSourceCode(finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum-1))
-		fmt.Printf("    > %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum, finding.Vulnerable_Function.SourceCode)
+		if outputColor {
+			fmt.Printf("    > %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum, red(finding.Vulnerable_Function.SourceCode))
+		} else {
+			fmt.Printf("    > %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum, finding.Vulnerable_Function.SourceCode)
+		}
 		fmt.Printf("      %d:\t%s\n", finding.Vulnerable_Function.SourceLineNum+1, GrabSourceCode(finding.Vulnerable_Function.SourceFilename, finding.Vulnerable_Function.SourceLineNum+1))
 
 		if finding.Untrusted_Source != nil {
@@ -123,7 +128,11 @@ func OutputFinding(finding Finding, outputColor bool) {
 			fmt.Printf("\n%s:%d\n", source.SourceFilename, source.SourceLineNum)
 			fmt.Printf("Source of Untrusted Input: [ %s ]\n", StripArguments(source.ParentFunction))
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum-1, GrabSourceCode(source.SourceFilename, source.SourceLineNum-1))
-			fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, source.SourceCode)
+			if outputColor {
+				fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, red(source.SourceCode))
+			} else {
+				fmt.Printf("    > %d:\t%s\n", source.SourceLineNum, source.SourceCode)
+			}
 			fmt.Printf("      %d:\t%s\n", source.SourceLineNum+1, GrabSourceCode(source.SourceFilename, source.SourceLineNum+1))
 
 			if Config.Verbose {
