@@ -82,14 +82,6 @@ func OutputResults(results []util.Finding, success bool) error {
 		fmt.Println(string(res))
 	}
 
-	if util.Config.OutputJSON && success {
-		res, err := json.Marshal(results)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(res))
-	}
-
 	for _, finding := range results {
 		util.OutputFinding(finding, outputColor)
 	}
