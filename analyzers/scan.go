@@ -171,9 +171,8 @@ func Scan(args []string) ([]util.Finding, error) {
 	// Calculate time taken
 	scan_time := time.Since(run_begin_time)
 
-	/* Unless the argument given is an absolute path, the path to the source file for findings are trimmed
-	 * to be relative to the most specific path shared by the argument and the current working directory.
-	 */
+	// Unless the argument given is an absolute path, the path to the source file for findings are trimmed
+	// to be relative to the most specific path shared by the argument and the current working directory.
 	parent_dir := ""
 	if len(args) > 0 && !filepath.IsAbs(args[0]) {
 		full_path, _ := filepath.Abs(args[0])
