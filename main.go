@@ -30,17 +30,19 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/praetorian-inc/gokart/cmd"
 )
 
 func main() {
 	cmd.Execute()
-	flag.Parse() // get the arguments from command line
 
-	// if there is a first argument that is not scan, print out an error message
+	// Print out a helpful message if command-line args are not understood
+	flag.Parse()
 	arg := flag.Arg(0)
 	if arg != "scan" && arg != "" && arg != "help" {
-		fmt.Printf("\nGoKart is fishtailing! Make sure to use \"gokart scan\" as the beginning of the command to steer GoKart in the right direction.\n\n")
+		fmt.Printf("\nGoKart is fishtailing! Make sure to use \"gokart scan\" as the beginning of the command to steer GoKart in the right direction.\n\nTry \"gokart help\" for more guidance.\n")
+		os.Exit(1)
 	}
 }
