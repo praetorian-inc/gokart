@@ -35,6 +35,8 @@ var CommandInjectionAnalyzer = &analysis.Analyzer{
 func vulnCmdInjectionFuncs() map[string][]string {
 	return map[string][]string{
 		"os/exec": {"Command", "CommandContext"},
+		"syscall": {"Exec", "ForkExec", "StartProcess"},
+		"golang.org/x/sys/execabs/": {"Command", "CommandContext"},
 	}
 }
 
