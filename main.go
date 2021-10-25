@@ -28,19 +28,16 @@ through an application, to remove false positives from data that comes from a tr
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 
 	"github.com/praetorian-inc/gokart/cmd"
 )
 
 func main() {
-	cmd.Execute()
-	flag.Parse() // get the arguments from command line
-
-	// if there is a first argument that is not scan, print out an error message
-	arg := flag.Arg(0)
-	if arg != "scan" && arg != "" && arg != "help" {
-		fmt.Printf("\nGoKart is fishtailing! Make sure to use \"gokart scan\" as the beginning of the command to steer GoKart in the right direction.\n\n")
+	err := cmd.Execute()
+	if err != nil {
+		fmt.Printf("\nError: %s\n\nTry \"gokart help\" to steer GoKart in the right direction.\n\n", err)
+		os.Exit(1)
 	}
 }

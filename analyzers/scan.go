@@ -60,26 +60,22 @@ func FilterResults(unfilteredResults []util.Finding, parent_dir string) ([]util.
 }
 
 func OutputResults(results []util.Finding, success bool) error {
-	var stdOutPipe, outputFile *os.File
 	var outputColor = true
 
 	if util.Config.OutputPath != "" {
-		stdOutPipe = os.Stdout // keep backup of the real stdout
 		// open file read/write | create if not exist | clear file at open if exists
 		outputFile, err := os.OpenFile(util.Config.OutputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			return err
 		}
+		defer outputFile.Close()
+
+		var stdOutPipe = os.Stdout // keep backup of the real stdout
+		defer func(){
+			os.Stdout = stdOutPipe // restore the real stdout
+		}()
 		os.Stdout = outputFile
 		outputColor = false
-	}
-
-	if util.Config.OutputJSON && success {
-		res, err := json.Marshal(results)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(res))
 	}
 
 	if util.Config.OutputJSON && success {
@@ -98,14 +94,6 @@ func OutputResults(results []util.Finding, success bool) error {
 	if util.Config.OutputSarif && success {
 		util.SarifPrintReport()
 		fmt.Println()
-	}
-
-	// if output was redirected for findings, change it back to the original stdout
-	if util.Config.OutputPath != "" {
-		// also generate the count of findings identified to the output file
-		util.OutputFindingMetadata(results, outputColor)
-		outputFile.Close()
-		os.Stdout = stdOutPipe // restoring the real stdout
 	}
 
 	return nil
@@ -179,9 +167,8 @@ func Scan(args []string) ([]util.Finding, error) {
 	// Calculate time taken
 	scan_time := time.Since(run_begin_time)
 
-	/* Unless the argument given is an absolute path, the path to the source file for findings are trimmed
-	 * to be relative to the most specific path shared by the argument and the current working directory.
-	 */
+	// Unless the argument given is an absolute path, the path to the source file for findings are trimmed
+	// to be relative to the most specific path shared by the argument and the current working directory.
 	parent_dir := ""
 	if len(args) > 0 && !filepath.IsAbs(args[0]) {
 		full_path, _ := filepath.Abs(args[0])
