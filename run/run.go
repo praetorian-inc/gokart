@@ -80,6 +80,7 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 		hadBadpkgs = true
 	}
 
+	// FIXME: this loop is quadratic in the number of bad packages
 	for _, v := range badpkgs {
 		pkgs = RemoveItem(v, pkgs)
 	}
