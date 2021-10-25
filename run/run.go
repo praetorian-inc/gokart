@@ -20,6 +20,7 @@ package run
 import (
 	"fmt"
 	"go/token"
+	"os"
 
 	"github.com/praetorian-inc/gokart/util"
 	"golang.org/x/tools/go/analysis"
@@ -75,7 +76,7 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	})
 	// Print error message if a package was unable to be loaded
 	if len(badpkgs) > 0 {
-		fmt.Printf("\nUh oh, a dashboard light is on! GoKart was unable to load the following packages: \n")
+		fmt.Fprintf(os.Stderr, "\nUh oh, a dashboard light is on! GoKart was unable to load the following packages: \n")
 		hadBadpkgs = true
 	}
 
@@ -84,11 +85,11 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	}
 	// Only print separator if we've found removed bad packages
 	if hadBadpkgs {
-		fmt.Printf("\n\n")
+		fmt.Fprintf(os.Stderr, "\n\n")
 	}
 	// Print error mssage if no scannable packages are found
 	if len(pkgs) == 0 {
-		fmt.Printf("CRASH! GoKart didn't find any files to scan! Make sure the usage is correct to get GoKart back on track. \n" +
+		fmt.Fprintf(os.Stderr, "CRASH! GoKart didn't find any files to scan! Make sure the usage is correct to get GoKart back on track. \n" +
 			"If the usage appears to be correct, try pointing gokart at the directory from where you would run 'go build'. \n")
 		success = false
 	}
@@ -99,16 +100,10 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 func RemoveItem(pkg *packages.Package, pkglist []*packages.Package) []*packages.Package {
 	for x, val := range pkglist {
 		if pkg == val {
-			if util.Config.Debug {
-				fmt.Printf("\"%s\" with errors:\n", pkg.Name)
-			} else {
-				fmt.Printf("- \"%s\"\n", pkg.PkgPath)
-			}
+			fmt.Fprintf(os.Stderr, "\n%s:\n", pkg.PkgPath)
 
-			if util.Config.Debug {
-				for _, pkgError := range pkg.Errors {
-					fmt.Printf("- %s\n", pkgError.Error())
-				}
+			for _, pkgError := range pkg.Errors {
+				fmt.Fprintf(os.Stderr, "- %s\n", pkgError.Error())
 			}
 			if len(pkglist) < 2 {
 				return pkglist[0:0]
