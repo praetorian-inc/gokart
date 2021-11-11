@@ -66,8 +66,9 @@ func LoadGenericAnalyzers() []*analysis.Analyzer {
 	var analyzers []*analysis.Analyzer
 
 	for analyzerName, analyzerDict := range util.ScanConfig.Analyzers {
+		vulnCalls, analyzerName, message := analyzerDict.VulnCalls, analyzerName, analyzerDict.Message
 		analyzerFunc := func(pass *analysis.Pass) (interface{}, error) {
-			return genericFunctionRun(pass, analyzerDict.VulnCalls, analyzerName, analyzerDict.Message)
+			return genericFunctionRun(pass, vulnCalls, analyzerName, message)
 		}
 		analysisRun := analysis.Analyzer{
 			Name:     analyzerName,
