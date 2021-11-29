@@ -15,6 +15,12 @@ to other Go security scanners. For instance, a SQL query that is concatenated wi
 traditionally be flagged as SQL injection; however, GoKart can figure out if the variable
 is actually a constant or constant equivalent, in which case there is no vulnerability.
 
+GoKart also helps to power [**Chariot**](https://lp.praetorian.com/l/874901/2021-11-24/dtw1j?utm_source=github&utm_medium=organic_oss&utm_campaign=gokart),
+Praetorian's security platform that helps you find, manage, and fix vulnerabilities in your source
+code and cloud environments. Chariot makes it simple to run automated, continuous GoKart scans on
+your source code. If you want to try GoKart, you can set up a free Chariot account in minutes by
+clicking [here](https://chariot.praetorian.com/app/login?register&utm_source=github&utm_medium=organic_oss&utm_campaign=gokart).
+
 ## Why We Built GoKart
 
 Static analysis is a powerful technique for finding vulnerabilities in source code. 
@@ -30,7 +36,7 @@ of tracking variable taint between variable assignments, significantly improving
 accuracy of findings. Our focus is on usability: pragmatically, that means we 
 have optimized our approaches to reduce false alarms.
 
-For more information, please read [our blog post](https://www.praetorian.com/blog/introducing-gokart/).
+For more information, please read [our blog post](https://www.praetorian.com/blog/introducing-gokart/utm_source=github&utm_medium=organic_oss&utm_campaign=gokart).
 
 ## Install
 
