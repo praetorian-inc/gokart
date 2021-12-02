@@ -90,7 +90,7 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	}
 	// Print error mssage if no scannable packages are found
 	if len(pkgs) == 0 {
-		fmt.Fprintf(os.Stderr, "CRASH! GoKart didn't find any files to scan! Make sure the usage is correct to get GoKart back on track. \n" +
+		fmt.Fprintf(os.Stderr, "CRASH! GoKart didn't find any files to scan! Make sure the usage is correct to get GoKart back on track. \n"+
 			"If the usage appears to be correct, try pointing gokart at the directory from where you would run 'go build'. \n")
 		success = false
 	}

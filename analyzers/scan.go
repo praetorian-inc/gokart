@@ -71,7 +71,7 @@ func OutputResults(results []util.Finding, success bool) error {
 		defer outputFile.Close()
 
 		var stdOutPipe = os.Stdout // keep backup of the real stdout
-		defer func(){
+		defer func() {
 			os.Stdout = stdOutPipe // restore the real stdout
 		}()
 		os.Stdout = outputFile
