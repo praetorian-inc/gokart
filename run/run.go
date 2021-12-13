@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"go/token"
 	"os"
+	"strings"
 
 	"github.com/praetorian-inc/gokart/util"
 	"golang.org/x/tools/go/analysis"
@@ -52,7 +53,6 @@ func Run(analyzers []*analysis.Analyzer, packages ...string) ([]util.Finding, bo
 // Load go packages
 func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	success := true
-	hadBadpkgs := false
 	conf := packages.Config{
 		Mode: packages.LoadSyntax,
 		//Disable loading tests. If we enable this, then packages will be loaded twice. Once with tests, once without.
@@ -67,28 +67,20 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 		return nil, false, err
 	}
 	// Detect any packages that are unable to be scanned due to compilation or accessibility errors
-	var badpkgs []*packages.Package
+	badpkgs := make(map[*packages.Package]bool)
 	packages.Visit(pkgs, nil, func(pkg *packages.Package) {
-		for range pkg.Errors {
-			badpkgs = append(badpkgs, pkg)
-			break
+		if len(pkg.Errors) != 0 {
+			badpkgs[pkg] = true
 		}
 	})
-	// Print error message if a package was unable to be loaded
-	if len(badpkgs) > 0 {
-		fmt.Fprintf(os.Stderr, "\nUh oh, a dashboard light is on! GoKart was unable to load the following packages: \n")
-		hadBadpkgs = true
-	}
 
-	// FIXME: this loop is quadratic in the number of bad packages
-	for _, v := range badpkgs {
-		pkgs = RemoveItem(v, pkgs)
-	}
-	// Only print separator if we've found removed bad packages
-	if hadBadpkgs {
+	if len(badpkgs) != 0 {
+		fmt.Fprintf(os.Stderr, "\nUh oh, a dashboard light is on! GoKart was unable to load the following packages: \n")
+		pkgs = RemoveBadPackages(pkgs, badpkgs)
 		fmt.Fprintf(os.Stderr, "\n\n")
 	}
-	// Print error mssage if no scannable packages are found
+
+	// Print error message if no scannable packages are found
 	if len(pkgs) == 0 {
 		fmt.Fprintf(os.Stderr, "CRASH! GoKart didn't find any files to scan! Make sure the usage is correct to get GoKart back on track. \n"+
 			"If the usage appears to be correct, try pointing gokart at the directory from where you would run 'go build'. \n")
@@ -97,23 +89,22 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	return pkgs, success, nil
 }
 
-// Remove bad packages from the list of packages to be scanned
-func RemoveItem(pkg *packages.Package, pkglist []*packages.Package) []*packages.Package {
-	for x, val := range pkglist {
-		if pkg == val {
-			fmt.Fprintf(os.Stderr, "\n%s:\n", pkg.PkgPath)
-
+// RemoveBadPackages takes the full list of packages and a map containing the packages that were
+func RemoveBadPackages(allPackages []*packages.Package, badPackages map[*packages.Package]bool) []*packages.Package {
+	buf := new(strings.Builder)
+	goodPackages := make([]*packages.Package, 0, len(allPackages))
+	for _, pkg := range allPackages {
+		if badPackages[pkg] {
+			fmt.Fprintf(buf, "\n%s:\n", pkg.PkgPath)
 			for _, pkgError := range pkg.Errors {
-				fmt.Fprintf(os.Stderr, "- %s\n", pkgError.Error())
+				fmt.Fprintf(buf, "- %s\n", pkgError.Error())
 			}
-			if len(pkglist) < 2 {
-				return pkglist[0:0]
-			}
-			pkglist[x] = pkglist[len(pkglist)-1]
-			return pkglist[0 : len(pkglist)-2]
+		} else {
+			goodPackages = append(goodPackages, pkg)
 		}
 	}
-	return pkglist
+	fmt.Fprint(os.Stderr, buf.String())
+	return goodPackages
 }
 
 // Run analyzers on a package
