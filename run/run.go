@@ -89,7 +89,7 @@ func LoadPackages(packagesList ...string) ([]*packages.Package, bool, error) {
 	return pkgs, success, nil
 }
 
-// RemoveBadPackages takes the full list of packages and a map containing the packages that were
+// RemoveBadPackages takes the full list of packages and a map containing the packages that produced errors while being loaded.
 func RemoveBadPackages(allPackages []*packages.Package, badPackages map[*packages.Package]bool) []*packages.Package {
 	buf := new(strings.Builder)
 	goodPackages := make([]*packages.Package, 0, len(allPackages))
