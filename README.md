@@ -36,7 +36,7 @@ of tracking variable taint between variable assignments, significantly improving
 accuracy of findings. Our focus is on usability: pragmatically, that means we 
 have optimized our approaches to reduce false alarms.
 
-For more information, please read [our blog post](https://www.praetorian.com/blog/introducing-gokart/utm_source=github&utm_medium=organic_oss&utm_campaign=gokart).
+For more information, please read [our blog post](https://www.praetorian.com/blog/introducing-gokart?utm_source=github&utm_medium=organic_oss&utm_campaign=gokart).
 
 ## Install
 
