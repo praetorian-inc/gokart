@@ -4,7 +4,8 @@ go 1.16
 
 require (
 	github.com/fatih/color v1.12.0
-	github.com/go-git/go-git/v5 v5.4.2 // indirect
+	github.com/go-git/go-git/v5 v5.4.2
+	github.com/google/go-cmp v0.5.5
 	github.com/lithammer/dedent v1.1.0
 	github.com/owenrumney/go-sarif v1.0.11
 	github.com/segmentio/fasthash v1.0.3
