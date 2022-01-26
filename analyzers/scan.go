@@ -19,11 +19,13 @@ and a generic analyzer based on recursive taint propagation
 package analyzers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -105,6 +107,15 @@ func Scan(args []string) ([]util.Finding, error) {
 	if err != nil {
 		fmt.Printf("Unable to get current dir.\n")
 	}
+	// output ascii-art for GoKart logo
+	cmd := exec.Command("cat", "./docs/img/ascii-art.ans")
+	cmdOutput := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	err = cmd.Run()
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+	}
+	fmt.Print(string(cmdOutput.Bytes()))
 
 	if util.Config.OutputSarif {
 		util.InitSarifReporting()
