@@ -26,10 +26,11 @@ import (
 // all variables are converted to SSA form and a call graph is constructed
 // recursive taint analysis is then used to search from a given Sink up the callgraph for Sources of user-controllable data
 var SQLInjectionAnalyzer = &analysis.Analyzer{
-	Name:     "sql_injection",
-	Doc:      "reports when SQL injection can occur",
-	Run:      sqlRun,
-	Requires: []*analysis.Analyzer{buildssa.Analyzer},
+	Name:       "sql_injection",
+	Doc:        "reports when SQL injection can occur",
+	Run:        sqlRun,
+	Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+	ResultType: resultType,
 }
 
 // grab_vulnerable_sql_functions() creates map of vulnerable functions that the scanner will check

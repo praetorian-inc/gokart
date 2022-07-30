@@ -24,10 +24,11 @@ import (
 // all variables are converted to SSA form and a call graph is constructed
 // recursive taint analysis is then used to search from a given Sink up the callgraph for Sources of user-controllable data
 var PathTraversalAnalyzer = &analysis.Analyzer{
-	Name:     "path_traversal",
-	Doc:      "reports when path traversal can occur",
-	Run:      traversalRun,
-	Requires: []*analysis.Analyzer{buildssa.Analyzer},
+	Name:       "path_traversal",
+	Doc:        "reports when path traversal can occur",
+	Run:        traversalRun,
+	Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+	ResultType: resultType,
 }
 
 // getVulnerableInjectionFunctions() returns a map of functions that may be vulnerable to path traversal when used with user controlled input

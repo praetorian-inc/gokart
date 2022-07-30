@@ -25,6 +25,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -32,6 +33,8 @@ import (
 	"github.com/praetorian-inc/gokart/util"
 	"golang.org/x/tools/go/analysis"
 )
+
+var resultType = reflect.TypeOf([]util.Finding(nil))
 
 var Analyzers = []*analysis.Analyzer{
 	RsaKeylenAnalyzer,

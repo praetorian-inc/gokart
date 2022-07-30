@@ -26,10 +26,11 @@ import (
 // converts all variables to SSA form to construct a call graph and performs
 // recursive taint analysis to search for input sources of user-controllable data
 var SSRFAnalyzer = &analysis.Analyzer{
-	Name:     "SSRF",
-	Doc:      "reports when SSRF vulnerabilities can occur",
-	Run:      ssrfRun,
-	Requires: []*analysis.Analyzer{buildssa.Analyzer},
+	Name:       "SSRF",
+	Doc:        "reports when SSRF vulnerabilities can occur",
+	Run:        ssrfRun,
+	Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+	ResultType: resultType,
 }
 
 // vulnerable_ssrf_funcs() returns a map of networking functions that may be vulnerable when used with user controlled input

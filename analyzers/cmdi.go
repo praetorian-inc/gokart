@@ -25,10 +25,11 @@ import (
 // converts all variables to SSA form to construct a call graph and performs
 // recursive taint analysis to search for input sources of user-controllable data
 var CommandInjectionAnalyzer = &analysis.Analyzer{
-	Name:     "command_injection",
-	Doc:      "reports when command injection can occur",
-	Run:      cmdInjectionRun,
-	Requires: []*analysis.Analyzer{buildssa.Analyzer},
+	Name:       "command_injection",
+	Doc:        "reports when command injection can occur",
+	Run:        cmdInjectionRun,
+	Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+	ResultType: resultType,
 }
 
 // vulnCmdInjectionFuncs() returns a map of command injection functions that may be vulnerable when used with user controlled input

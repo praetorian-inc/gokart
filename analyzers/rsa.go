@@ -31,10 +31,11 @@ import (
 // all variables are converted to SSA form and a call graph is constructed
 // recursive analysis is then used to resolve variables used as a key length to a final constant value at the callsite
 var RsaKeylenAnalyzer = &analysis.Analyzer{
-	Name:     "rsa_keylen",
-	Doc:      "reports when rsa keys are too short",
-	Run:      rsaRun,
-	Requires: []*analysis.Analyzer{buildssa.Analyzer},
+	Name:       "rsa_keylen",
+	Doc:        "reports when rsa keys are too short",
+	Run:        rsaRun,
+	Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+	ResultType: resultType,
 }
 
 const RECOMMENDED_KEYLEN = 2048
