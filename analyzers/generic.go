@@ -71,10 +71,11 @@ func LoadGenericAnalyzers() []*analysis.Analyzer {
 			return genericFunctionRun(pass, vulnCalls, analyzerName, message)
 		}
 		analysisRun := analysis.Analyzer{
-			Name:     analyzerName,
-			Doc:      analyzerDict.Doc,
-			Run:      analyzerFunc,
-			Requires: []*analysis.Analyzer{buildssa.Analyzer},
+			Name:       analyzerName,
+			Doc:        analyzerDict.Doc,
+			Run:        analyzerFunc,
+			Requires:   []*analysis.Analyzer{buildssa.Analyzer},
+			ResultType: resultType,
 		}
 		analyzers = append(analyzers, &analysisRun)
 	}

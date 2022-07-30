@@ -15,13 +15,25 @@
 package testutil
 
 import (
+	"go/types"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/praetorian-inc/gokart/run"
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/analysis/passes/buildssa"
 )
+
+func MinimalPass(a *analysis.Analyzer) *analysis.Pass {
+	return &analysis.Pass{
+		Analyzer: a,
+		ResultOf: map[*analysis.Analyzer]interface{}{
+			buildssa.Analyzer: new(buildssa.SSA),
+		},
+		Pkg: types.NewPackage("./foo", "bar"),
+	}
+}
 
 func RunTest(file string, numResults int, resultsType string, analyzer *analysis.Analyzer, t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
