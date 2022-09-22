@@ -38,8 +38,8 @@ var (
 	// Update the version information here.
 	versionInfo = &Version{
 		Major:      0,
-		Minor:      4,
-		Patch:      0,
+		Minor:      5,
+		Patch:      1,
 		PreRelease: "",
 	}
 	versionCmd = &cobra.Command{
