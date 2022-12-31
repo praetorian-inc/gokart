@@ -32,7 +32,7 @@ type TaintedCode struct {
 	ParentFunction string
 }
 
-//MapData is a struct that contains information about each hash
+// MapData is a struct that contains information about each hash
 type MapData struct {
 	Mapped     bool // whether a hash has already been mapped
 	Vulnerable bool // whether a hash has been found vulnerable
@@ -172,7 +172,10 @@ func (ta *TaintAnalyzer) ContainsTaintRecurse(startCall *ssa.CallCommon, val *ss
 	case *ssa.Call:
 		callFunc, ok := (expr.Call.Value).(*ssa.Function)
 		if ok {
-			globalPkgName := callFunc.Pkg.Pkg.Name()
+			globalPkgName := ""
+			if callFunc.Pkg != nil {
+				globalPkgName = callFunc.Pkg.Pkg.Name()
+			}
 			if val, ok := VulnGlobalFuncs[globalPkgName]; ok {
 				for _, funcName := range val {
 					if callFunc.Name() == funcName {
