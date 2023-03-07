@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/praetorian-inc/gokart/util"
+	"github.com/garcia-jc/gokart/util"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ func TestScanCommand(t *testing.T) {
 		moduledir         string
 	}{
 		{[]string{"scan"}, "GoKart found 0 potentially vulnerable functions", ""},
-		{[]string{"scan", "-r", "https://github.com/praetorian-inc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir + "/gokart"},
+		{[]string{"scan", "-r", "https://github.com/garcia-jc/gokart"}, "GoKart found 0 potentially vulnerable functions", cur_dir + "/gokart"},
 		{[]string{"scan", "--help"}, "  -v, --verbose               outputs full trace of taint analysis", ""},
 	}
 	for _, tt := range tests {

@@ -28,7 +28,7 @@ var (
 		│                                                            │
 		│   An open-source static analysis security scanner for Go   │
 		│                                                            │
-		│           https://github.com/praetorian-inc/gokart         │
+		│           https://github.com/garcia-jc/gokart         │
 		│                                                            │
 		╰────────────────────────────────────────────────────────────╯
 		
@@ -50,7 +50,7 @@ var (
 		╰────────────────────────────────────────────────────────────╯
 	
 		Please report any bugs or feature requests by opening a new
-		issue at https://github.com/praetorian-inc/gokart`),
+		issue at https://github.com/garcia-jc/gokart`),
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

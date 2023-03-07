@@ -22,8 +22,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/praetorian-inc/gokart/analyzers"
-	"github.com/praetorian-inc/gokart/util"
+	"github.com/garcia-jc/gokart/analyzers"
+	"github.com/garcia-jc/gokart/util"
 	"github.com/spf13/cobra"
 )
 

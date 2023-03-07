@@ -17,7 +17,7 @@ package analyzers
 import (
 	"testing"
 
-	"github.com/praetorian-inc/gokart/test/testutil"
+	"github.com/garcia-jc/gokart/test/testutil"
 )
 
 func TestSQLInjection(t *testing.T) {
