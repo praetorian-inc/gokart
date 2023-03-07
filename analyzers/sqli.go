@@ -17,7 +17,7 @@ package analyzers
 import (
 	"strings"
 
-	"github.com/praetorian-inc/gokart/util"
+	"github.com/garcia-jc/gokart/util"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
 )

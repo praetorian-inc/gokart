@@ -19,7 +19,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/praetorian-inc/gokart/run"
+	"github.com/garcia-jc/gokart/run"
 	"golang.org/x/tools/go/analysis"
 )
 

@@ -31,7 +31,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/praetorian-inc/gokart/cmd"
+	"github.com/garcia-jc/gokart/cmd"
 )
 
 func main() {

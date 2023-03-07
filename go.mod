@@ -1,4 +1,4 @@
-module github.com/praetorian-inc/gokart
+module github.com/garcia-jc/gokart
 
 go 1.19
 
