@@ -17,7 +17,6 @@ package util
 import (
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -80,7 +79,7 @@ var (
 )
 
 func LoadScanConfig() {
-	configBytes, err := ioutil.ReadFile(Config.YMLPath)
+	configBytes, err := os.ReadFile(Config.YMLPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -160,7 +159,7 @@ func getDefaultConfigPath() string {
 	// If ~/.gokart/analyzers.yml doesn't exist, create it with the default config
 	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
 		fmt.Printf("Initializing default config at %s\n", yamlPath)
-		if err := ioutil.WriteFile(yamlPath, DefaultAnalyzersContent, 0o744); err != nil {
+		if err := os.WriteFile(yamlPath, DefaultAnalyzersContent, 0o744); err != nil {
 			log.Fatalf("failed to write default config to %s: %v", yamlPath, err)
 		}
 	} else if err != nil {

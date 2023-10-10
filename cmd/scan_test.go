@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -65,7 +65,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string) string {
 
 	// reset stdout to normal stdout and read output from cmd
 	w.Close()
-	stdoutres, _ := ioutil.ReadAll(r)
+	stdoutres, _ := io.ReadAll(r)
 	os.Stdout = old
 
 	//get the last line of output for comparison with our tests

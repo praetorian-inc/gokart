@@ -18,7 +18,6 @@ Package cmd implements a simple command line interface using cobra
 package cmd
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -66,7 +65,7 @@ Scans a Go module directory. To scan the current directory recursively, use goka
 
 		// If remoteModule was set, clone the remote repository and scan it
 		if len(remoteModule) != 0 {
-			moduleTempDir, err := ioutil.TempDir(".", "gokart")
+			moduleTempDir, err := os.MkdirTemp(".", "gokart")
 			if err != nil {
 				log.Fatal("Error creating temporary directory: ", err.Error())
 			}
